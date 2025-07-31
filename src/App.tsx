@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { BookOpen, Plus, Settings, Brain } from 'lucide-react';
+import { BookOpen, Plus, Brain } from 'lucide-react';
+// import { BookOpen, Plus, Settings, Brain } from 'lucide-react';
 import type { TabType } from './types/flashcard';
 import { useFlashcards } from './hooks/useFlashcards';
 import AIEnhancedAddTab from './components/AIEnhancedAddTab';
