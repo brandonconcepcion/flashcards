@@ -1,6 +1,6 @@
 # Deployment Guide
 
-Your Study Flashcards app is now ready to deploy! Here are several options for hosting your personal website, including automated CI/CD deployment:
+Your Study Flashcards app is now ready to deployy! Here are several options for hosting your personal website, including automated CI/CD deployment:
 
 ## 🚀 CI/CD Automated Deployment (Recommended)
 
