@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, RotateCcw, AlertCircle, Shuffle, CheckCircle } from 'lucide-react';
 import type { Flashcard } from '../types/flashcard';
-import LaTeXText from './LaTeXText';
+import MarkdownText from './MarkdownText';
 
 interface StudyTabProps {
   flashcards: Flashcard[];
@@ -145,7 +145,7 @@ const StudyTab: React.FC<StudyTabProps> = ({
                 <div className="card-content">
                   <h3>Question</h3>
                   <div className="card-text">
-                    <LaTeXText>{currentCard.question}</LaTeXText>
+                    <MarkdownText>{currentCard.question}</MarkdownText>
                   </div>
                 </div>
               {currentCard.category && (
@@ -157,7 +157,7 @@ const StudyTab: React.FC<StudyTabProps> = ({
                 <div className="card-content">
                   <h3>Answer</h3>
                   <div className="card-text">
-                    <LaTeXText>{currentCard.answer}</LaTeXText>
+                    <MarkdownText>{currentCard.answer}</MarkdownText>
                   </div>
                 </div>
               <div className="flip-hint">Click to see question</div>

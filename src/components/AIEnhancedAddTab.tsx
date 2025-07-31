@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Check, Sparkles, Brain, Lightbulb, Key, Eye, EyeOff, Calculator } from 'lucide-react';
 import { aiService } from '../services/aiService';
 import type { AISuggestions } from '../services/aiService';
-import LaTeXText from './LaTeXText';
+import MarkdownText from './MarkdownText';
 
 interface AIEnhancedAddTabProps {
   addFlashcard: (question: string, answer: string, category: string) => void;
@@ -227,7 +227,7 @@ const AIEnhancedAddTab: React.FC<AIEnhancedAddTabProps> = ({ addFlashcard, getCa
             {showPreview && answer.trim() && (
               <div className="latex-preview">
                 <h4>Preview:</h4>
-                <LaTeXText>{answer}</LaTeXText>
+                <MarkdownText>{answer}</MarkdownText>
               </div>
             )}
           </div>

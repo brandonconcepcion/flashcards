@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Search, Edit2, Trash2, Calendar, BarChart3, Download, Upload } from 'lucide-react';
 import type { Flashcard } from '../types/flashcard';
-import LaTeXText from './LaTeXText';
+import MarkdownText from './MarkdownText';
 
 interface ManageTabProps {
   flashcards: Flashcard[];
@@ -272,10 +272,10 @@ const ManageTab: React.FC<ManageTabProps> = ({
                 <>
                   <div className="card-content">
                     <div className="card-question">
-                      <strong>Q:</strong> <LaTeXText>{card.question}</LaTeXText>
+                      <strong>Q:</strong> <MarkdownText>{card.question}</MarkdownText>
                     </div>
                     <div className="card-answer">
-                      <strong>A:</strong> <LaTeXText>{card.answer}</LaTeXText>
+                      <strong>A:</strong> <MarkdownText>{card.answer}</MarkdownText>
                     </div>
                   </div>
                   
