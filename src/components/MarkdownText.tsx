@@ -12,7 +12,6 @@ const MarkdownText: React.FC<MarkdownTextProps> = ({ children, className = '' })
   const parseMarkdown = (text: string): React.ReactNode[] => {
     const lines = text.split('\n');
     const elements: React.ReactNode[] = [];
-    let currentIndex = 0;
     let inCodeBlock = false;
     let codeBlockContent: string[] = [];
     let codeBlockLanguage = '';
