@@ -24,8 +24,6 @@ const StudyTab: React.FC<StudyTabProps> = ({
   const [selectedCategory, setSelectedCategory] = useState('');
 
   const categories = getCategories();
-
-  const [editingCardId, setEditingCardId] = useState<string | null>(null);
   const [showEditor, setShowEditor] = useState(false);
 
   // Initialize cards when component mounts or category changes
