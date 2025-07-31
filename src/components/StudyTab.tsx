@@ -25,6 +25,9 @@ const StudyTab: React.FC<StudyTabProps> = ({
 
   const categories = getCategories();
 
+  const [editingCardId, setEditingCardId] = useState<string | null>(null);
+  const [showEditor, setShowEditor] = useState(false);
+
   // Initialize cards when component mounts or category changes
   useEffect(() => {
     const cards = getCardsByCategory(selectedCategory);
@@ -139,32 +142,92 @@ const StudyTab: React.FC<StudyTabProps> = ({
       </div>
 
       <div className="flashcard-container">
-        <div className={`flashcard ${isFlipped ? 'flipped' : ''}`} onClick={handleFlip}>
-          <div className="flashcard-inner">
+        <div className={`flashcard ${isFlipped ? 'flipped' : ''}`}>
+          {/* Top-left category */}
+          <div className="card-category">
+                {currentCard.category}
+          </div>
+          
+          {/* Pencil Button */}
+          <button
+            className="edit-button"
+            onClick={(e) => {
+              e.stopPropagation(); // prevent card from flipping
+              setShowEditor(true);
+            }}
+          >
+            ✏️
+          </button>
+          <div className="flashcard-inner" onClick={handleFlip}>
             <div className="flashcard-front">
-                <div className="card-content">
-                  <h3>Question</h3>
-                  <div className="card-text">
-                    <MarkdownText>{currentCard.question}</MarkdownText>
-                  </div>
+              <div className="card-content">
+                <div className="card-text">
+                  <MarkdownText>{currentCard.question}</MarkdownText>
                 </div>
-              {currentCard.category && (
-                <div className="card-category">{currentCard.category}</div>
-              )}
+              </div>
               <div className="flip-hint">Click to reveal answer</div>
             </div>
             <div className="flashcard-back">
-                <div className="card-content">
-                  <h3>Answer</h3>
-                  <div className="card-text">
-                    <MarkdownText>{currentCard.answer}</MarkdownText>
-                  </div>
+              <div className="card-content">
+                <div className="card-text">
+                  <MarkdownText>{currentCard.answer}</MarkdownText>
                 </div>
+              </div>
               <div className="flip-hint">Click to see question</div>
             </div>
           </div>
         </div>
       </div>
+      {showEditor && (
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <h3>Edit Flashcard</h3>
+        <div className="form-group">
+          <label>Question</label>
+          <textarea
+            value={currentCard.question}
+            onChange={(e) =>
+              setCurrentCards((prev) =>
+                prev.map((c, i) =>
+                  i === currentIndex ? { ...c, question: e.target.value } : c
+                )
+              )
+            }
+          />
+        </div>
+        <div className="form-group">
+          <label>Answer</label>
+          <textarea
+            value={currentCard.answer}
+            onChange={(e) =>
+              setCurrentCards((prev) =>
+                prev.map((c, i) =>
+                  i === currentIndex ? { ...c, answer: e.target.value } : c
+                )
+              )
+            }
+          />
+        </div>
+        <div className="form-group">
+        <label>Category</label>
+        <input
+          type="text"
+          value={currentCard.category}
+          onChange={(e) =>
+            setCurrentCards((prev) =>
+              prev.map((c, i) =>
+                i === currentIndex ? { ...c, category: e.target.value } : c
+              )
+            )
+          }
+        />
+      </div>
+        <button className="btn btn-primary" onClick={() => setShowEditor(false)}>
+          Save & Close
+        </button>
+      </div>
+    </div>
+  )}
 
       <div className="study-navigation">
         <button

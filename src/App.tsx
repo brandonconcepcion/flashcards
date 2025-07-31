@@ -14,7 +14,7 @@ function App() {
   const tabs = [
     { id: 'add' as TabType, label: 'Add Cards', icon: Plus },
     { id: 'study' as TabType, label: 'Study Mode', icon: Brain },
-    { id: 'manage' as TabType, label: 'Manage Cards', icon: Settings },
+    // { id: 'manage' as TabType, label: 'Manage Cards', icon: Settings },
   ];
 
   return (

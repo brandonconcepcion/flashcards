@@ -5,11 +5,12 @@ import { InlineMath, BlockMath } from 'react-katex';
 interface MarkdownTextProps {
   children: string;
   className?: string;
+  inline?: boolean;
 }
 
-const MarkdownText: React.FC<MarkdownTextProps> = ({ children, className = '' }) => {
+const MarkdownText: React.FC<MarkdownTextProps> = ({ children, className = '', inline = false }) => {
   // Simple markdown parser that handles common Jupyter-style formatting
-  const parseMarkdown = (text: string): React.ReactNode[] => {
+  const parseMarkdown = (text: string, inline: boolean): React.ReactNode[] => {
     const lines = text.split('\n');
     const elements: React.ReactNode[] = [];
     let inCodeBlock = false;
@@ -119,11 +120,15 @@ const MarkdownText: React.FC<MarkdownTextProps> = ({ children, className = '' })
       }
 
       // Handle regular paragraphs
-      return (
+     return inline ? (
+        <span key={`p-${lineIndex}`} className="markdown-paragraph-inline">
+            {processInlineContent(line)}
+        </span>
+        ) : (
         <p key={`p-${lineIndex}`} className="markdown-paragraph">
-          {processInlineContent(line)}
+            {processInlineContent(line)}
         </p>
-      );
+        );
     };
 
     // Process inline content (bold, italic, code, LaTeX)
@@ -317,13 +322,17 @@ const MarkdownText: React.FC<MarkdownTextProps> = ({ children, className = '' })
     return elements;
   };
 
-  const content = parseMarkdown(children);
+  const content = parseMarkdown(children, inline);
 
-  return (
+  return inline ? (
+    <span className={`markdown-inline-text ${className}`}>
+        {content}
+    </span>
+    ) : (
     <div className={`markdown-text ${className}`}>
-      {content}
+        {content}
     </div>
-  );
+    );
 };
 
 export default MarkdownText;

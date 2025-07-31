@@ -140,9 +140,9 @@ const ManageTab: React.FC<ManageTabProps> = ({
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'easy': return '#22c55e';
-      case 'medium': return '#f59e0b';
-      case 'hard': return '#ef4444';
+      case 'easy': return '#52a872ff';
+      case 'medium': return '#b8904bff';
+      case 'hard': return '#c25c5cff';
       default: return '#6b7280';
     }
   };
@@ -272,7 +272,8 @@ const ManageTab: React.FC<ManageTabProps> = ({
                 <>
                   <div className="card-content">
                     <div className="card-question">
-                      <strong>Q:</strong> <MarkdownText>{card.question}</MarkdownText>
+                      <strong>Q: </strong> 
+                      <MarkdownText inline>{card.question}</MarkdownText>
                     </div>
                     <div className="card-answer">
                       <strong>A:</strong> <MarkdownText>{card.answer}</MarkdownText>
