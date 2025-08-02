@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { BookOpen, Plus, Brain } from 'lucide-react';
-// import { BookOpen, Plus, Settings, Brain } from 'lucide-react';
+// import { BookOpen, Plus, Brain } from 'lucide-react';
+import { BookOpen, Plus, Settings, Brain } from 'lucide-react';
 import type { TabType } from './types/flashcard';
 import { useFlashcards } from './hooks/useFlashcards';
 import AIEnhancedAddTab from './components/AIEnhancedAddTab';
@@ -15,7 +15,7 @@ function App() {
   const tabs = [
     { id: 'add' as TabType, label: 'Add Cards', icon: Plus },
     { id: 'study' as TabType, label: 'Study Mode', icon: Brain },
-    // { id: 'manage' as TabType, label: 'Manage Cards', icon: Settings },
+    { id: 'manage' as TabType, label: 'Manage Cards', icon: Settings },
   ];
 
   return (

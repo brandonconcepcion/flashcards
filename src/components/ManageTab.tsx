@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Search, Edit2, Trash2, Calendar, BarChart3, Download, Upload } from 'lucide-react';
+import { Search, Edit2, Trash2, Calendar, BarChart3, Download, Upload, ChevronRight, ChevronDown, Filter, X } from 'lucide-react';
 import type { Flashcard } from '../types/flashcard';
 import MarkdownText from './MarkdownText';
 
@@ -12,6 +12,9 @@ interface ManageTabProps {
   importFlashcards: (flashcards: Flashcard[]) => void;
 }
 
+type SortField = 'question' | 'category' | 'difficulty' | 'createdAt';
+type SortDirection = 'asc' | 'desc';
+
 const ManageTab: React.FC<ManageTabProps> = ({
   flashcards,
   updateFlashcard,
@@ -21,6 +24,11 @@ const ManageTab: React.FC<ManageTabProps> = ({
   importFlashcards,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedDifficulty, setSelectedDifficulty] = useState('');
+  const [sortField, setSortField] = useState<SortField>('createdAt');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [editingCard, setEditingCard] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({
     question: '',
@@ -29,8 +37,61 @@ const ManageTab: React.FC<ManageTabProps> = ({
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const displayCards = searchQuery ? searchCards(searchQuery) : flashcards;
   const categories = getCategories();
+
+  // Filter and sort cards
+  const getFilteredAndSortedCards = () => {
+    let filtered = searchQuery ? searchCards(searchQuery) : flashcards;
+
+    // Apply category filter
+    if (selectedCategory) {
+      filtered = filtered.filter(card => card.category === selectedCategory);
+    }
+
+    // Apply difficulty filter
+    if (selectedDifficulty) {
+      filtered = filtered.filter(card => card.difficulty === selectedDifficulty);
+    }
+
+    // Sort cards
+    filtered.sort((a, b) => {
+      let aValue: any = a[sortField];
+      let bValue: any = b[sortField];
+
+      // Handle date fields
+      if (sortField === 'createdAt') {
+        aValue = aValue ? new Date(aValue).getTime() : 0;
+        bValue = bValue ? new Date(bValue).getTime() : 0;
+      }
+
+      // Handle string fields
+      if (typeof aValue === 'string') {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
+      }
+
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    return filtered;
+  };
+
+  const displayCards = getFilteredAndSortedCards();
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const handleCardClick = (cardId: string) => {
+    setExpandedCard(expandedCard === cardId ? null : cardId);
+  };
 
   const handleEdit = (card: Flashcard) => {
     setEditingCard(card.id);
@@ -39,6 +100,8 @@ const ManageTab: React.FC<ManageTabProps> = ({
       answer: card.answer,
       category: card.category,
     });
+    // Ensure the card is expanded when editing
+    setExpandedCard(card.id);
   };
 
   const handleSaveEdit = () => {
@@ -54,9 +117,13 @@ const ManageTab: React.FC<ManageTabProps> = ({
     setEditForm({ question: '', answer: '', category: '' });
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent card expansion
     if (window.confirm('Are you sure you want to delete this flashcard?')) {
       deleteFlashcard(id);
+      if (expandedCard === id) {
+        setExpandedCard(null);
+      }
     }
   };
 
@@ -83,12 +150,10 @@ const ManageTab: React.FC<ManageTabProps> = ({
         const content = e.target?.result as string;
         const importedCards = JSON.parse(content) as Flashcard[];
         
-        // Validate the imported data
         if (!Array.isArray(importedCards)) {
           throw new Error('Invalid file format: Expected an array of flashcards');
         }
 
-        // Basic validation of flashcard structure
         const validCards = importedCards.filter(card => 
           card && 
           typeof card.id === 'string' &&
@@ -100,7 +165,6 @@ const ManageTab: React.FC<ManageTabProps> = ({
           throw new Error('No valid flashcards found in the file');
         }
 
-        // Generate new IDs to avoid conflicts
         const cardsWithNewIds = validCards.map(card => ({
           ...card,
           id: crypto.randomUUID(),
@@ -124,7 +188,6 @@ const ManageTab: React.FC<ManageTabProps> = ({
     };
     reader.readAsText(file);
     
-    // Reset the input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -140,11 +203,22 @@ const ManageTab: React.FC<ManageTabProps> = ({
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'easy': return '#52a872ff';
-      case 'medium': return '#b8904bff';
-      case 'hard': return '#c25c5cff';
+      case 'easy': return '#22c55e';
+      case 'medium': return '#f59e0b';
+      case 'hard': return '#ef4444';
       default: return '#6b7280';
     }
+  };
+
+  const truncateText = (text: string, maxLength: number = 60) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+  };
+
+  const clearFilters = () => {
+    setSelectedCategory('');
+    setSelectedDifficulty('');
+    setSearchQuery('');
   };
 
   const stats = {
@@ -155,6 +229,8 @@ const ManageTab: React.FC<ManageTabProps> = ({
     medium: flashcards.filter(card => card.difficulty === 'medium').length,
     hard: flashcards.filter(card => card.difficulty === 'hard').length,
   };
+
+  const hasActiveFilters = selectedCategory || selectedDifficulty || searchQuery;
 
   return (
     <div className="manage-tab">
@@ -209,123 +285,246 @@ const ManageTab: React.FC<ManageTabProps> = ({
         </div>
       </div>
 
-      <div className="search-bar">
-        <Search size={20} />
-        <input
-          type="text"
-          placeholder="Search your flashcards..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+      {/* Search and Filters */}
+      <div className="search-and-filters">
+        <div className="search-bar">
+          <Search size={20} />
+          <input
+            type="text"
+            placeholder="Search your flashcards..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        
+        <div className="filters">
+          <div className="filter-group">
+            <Filter size={16} />
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="filter-select"
+            >
+              <option value="">All Categories</option>
+              {categories.map(category => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          <div className="filter-group">
+            <select
+              value={selectedDifficulty}
+              onChange={(e) => setSelectedDifficulty(e.target.value)}
+              className="filter-select"
+            >
+              <option value="">All Difficulties</option>
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+
+          {hasActiveFilters && (
+            <button onClick={clearFilters} className="btn btn-secondary btn-sm">
+              <X size={16} />
+              Clear Filters
+            </button>
+          )}
+        </div>
       </div>
 
-      <div className="cards-list">
+      {/* Cards Table */}
+      <div className="cards-table-container">
         {displayCards.length === 0 ? (
           <div className="no-results">
             <p>No flashcards found.</p>
           </div>
         ) : (
-          displayCards.map(card => (
-            <div key={card.id} className="card-item">
-              {editingCard === card.id ? (
-                <div className="edit-form">
-                  <div className="form-group">
-                    <label>Question:</label>
-                    <textarea
-                      value={editForm.question}
-                      onChange={(e) => setEditForm({ ...editForm, question: e.target.value })}
-                      rows={3}
-                    />
+          <div className="cards-table">
+            {/* Table Header */}
+            <div className="table-header">
+              <div className="header-cell expand-cell"></div>
+              <div 
+                className={`header-cell question-cell sortable ${sortField === 'question' ? 'sorted' : ''}`}
+                onClick={() => handleSort('question')}
+              >
+                Question
+                {sortField === 'question' && (
+                  <span className="sort-indicator">
+                    {sortDirection === 'asc' ? '↑' : '↓'}
+                  </span>
+                )}
+              </div>
+              <div 
+                className={`header-cell category-cell sortable ${sortField === 'category' ? 'sorted' : ''}`}
+                onClick={() => handleSort('category')}
+              >
+                Category
+                {sortField === 'category' && (
+                  <span className="sort-indicator">
+                    {sortDirection === 'asc' ? '↑' : '↓'}
+                  </span>
+                )}
+              </div>
+              <div 
+                className={`header-cell difficulty-cell sortable ${sortField === 'difficulty' ? 'sorted' : ''}`}
+                onClick={() => handleSort('difficulty')}
+              >
+                Difficulty
+                {sortField === 'difficulty' && (
+                  <span className="sort-indicator">
+                    {sortDirection === 'asc' ? '↑' : '↓'}
+                  </span>
+                )}
+              </div>
+              <div 
+                className={`header-cell date-cell sortable ${sortField === 'createdAt' ? 'sorted' : ''}`}
+                onClick={() => handleSort('createdAt')}
+              >
+                Created
+                {sortField === 'createdAt' && (
+                  <span className="sort-indicator">
+                    {sortDirection === 'asc' ? '↑' : '↓'}
+                  </span>
+                )}
+              </div>
+              <div className="header-cell actions-cell">Actions</div>
+            </div>
+
+            {/* Table Rows */}
+            {displayCards.map(card => (
+              <div key={card.id} className="table-row-container">
+                <div 
+                  className={`table-row ${expandedCard === card.id ? 'expanded' : ''}`}
+                  onClick={() => handleCardClick(card.id)}
+                >
+                  <div className="table-cell expand-cell">
+                    {expandedCard === card.id ? (
+                      <ChevronDown size={16} />
+                    ) : (
+                      <ChevronRight size={16} />
+                    )}
                   </div>
-                  <div className="form-group">
-                    <label>Answer:</label>
-                    <textarea
-                      value={editForm.answer}
-                      onChange={(e) => setEditForm({ ...editForm, answer: e.target.value })}
-                      rows={4}
-                    />
+                  <div className="table-cell question-cell">
+                    <span className="question-text">
+                      {truncateText(card.question.replace(/[#*`]/g, '').trim())}
+                    </span>
                   </div>
-                  <div className="form-group">
-                    <label>Category:</label>
-                    <input
-                      type="text"
-                      value={editForm.category}
-                      onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
-                      list="edit-categories"
-                    />
-                    <datalist id="edit-categories">
-                      {categories.map(cat => (
-                        <option key={cat} value={cat} />
-                      ))}
-                    </datalist>
-                  </div>
-                  <div className="edit-actions">
-                    <button onClick={handleSaveEdit} className="btn btn-primary">
-                      Save
-                    </button>
-                    <button onClick={handleCancelEdit} className="btn btn-secondary">
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <div className="card-content">
-                    <div className="card-question">
-                      <strong>Q: </strong> 
-                      <MarkdownText inline>{card.question}</MarkdownText>
-                    </div>
-                    <div className="card-answer">
-                      <strong>A:</strong> <MarkdownText>{card.answer}</MarkdownText>
-                    </div>
-                  </div>
-                  
-                  <div className="card-meta">
+                  <div className="table-cell category-cell">
                     {card.category && (
                       <span className="category-tag">{card.category}</span>
                     )}
+                  </div>
+                  <div className="table-cell difficulty-cell">
                     <span 
                       className="difficulty-badge"
                       style={{ backgroundColor: getDifficultyColor(card.difficulty) }}
                     >
                       {card.difficulty}
                     </span>
-                    <div className="card-dates">
-                      <div className="date-info">
-                        <Calendar size={14} />
-                        Created: {formatDate(card.createdAt)}
-                      </div>
-                      {card.lastReviewed && (
-                        <div className="date-info">
-                          Last reviewed: {formatDate(card.lastReviewed)}
-                        </div>
-                      )}
-                      <div className="review-count">
-                        Reviews: {card.reviewCount}
-                      </div>
-                    </div>
                   </div>
-
-                  <div className="card-actions">
+                  <div className="table-cell date-cell">
+                    {formatDate(card.createdAt)}
+                  </div>
+                  <div className="table-cell actions-cell">
                     <button
-                      onClick={() => handleEdit(card)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(card);
+                      }}
                       className="btn btn-secondary btn-sm"
                     >
-                      <Edit2 size={16} />
-                      Edit
+                      <Edit2 size={14} />
                     </button>
                     <button
-                      onClick={() => handleDelete(card.id)}
+                      onClick={(e) => handleDelete(card.id, e)}
                       className="btn btn-danger btn-sm"
                     >
-                      <Trash2 size={16} />
-                      Delete
+                      <Trash2 size={14} />
                     </button>
                   </div>
-                </>
-              )}
-            </div>
-          ))
+                </div>
+
+                {/* Expanded Card Content */}
+                {expandedCard === card.id && (
+                  <div className="expanded-content">
+                    {editingCard === card.id ? (
+                      <div className="edit-form">
+                        <div className="form-group">
+                          <label>Question:</label>
+                          <textarea
+                            value={editForm.question}
+                            onChange={(e) => setEditForm({ ...editForm, question: e.target.value })}
+                            rows={3}
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>Answer:</label>
+                          <textarea
+                            value={editForm.answer}
+                            onChange={(e) => setEditForm({ ...editForm, answer: e.target.value })}
+                            rows={6}
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>Category:</label>
+                          <input
+                            type="text"
+                            value={editForm.category}
+                            onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
+                            list="edit-categories"
+                          />
+                          <datalist id="edit-categories">
+                            {categories.map(cat => (
+                              <option key={cat} value={cat} />
+                            ))}
+                          </datalist>
+                        </div>
+                        <div className="edit-actions">
+                          <button onClick={handleSaveEdit} className="btn btn-primary">
+                            Save Changes
+                          </button>
+                          <button onClick={handleCancelEdit} className="btn btn-secondary">
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="card-details">
+                        <div className="card-section">
+                          <h4>Question</h4>
+                          <div className="card-content">
+                            <MarkdownText>{card.question}</MarkdownText>
+                          </div>
+                        </div>
+                        <div className="card-section">
+                          <h4>Answer</h4>
+                          <div className="card-content">
+                            <MarkdownText>{card.answer}</MarkdownText>
+                          </div>
+                        </div>
+                        <div className="card-metadata">
+                          <div className="metadata-item">
+                            <Calendar size={14} />
+                            <span>Created: {formatDate(card.createdAt)}</span>
+                          </div>
+                          {card.lastReviewed && (
+                            <div className="metadata-item">
+                              <Calendar size={14} />
+                              <span>Last reviewed: {formatDate(card.lastReviewed)}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>

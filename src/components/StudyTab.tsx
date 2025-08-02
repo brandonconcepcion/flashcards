@@ -9,6 +9,7 @@ interface StudyTabProps {
   getCardsByCategory: (category: string) => Flashcard[];
   shuffleCards: (cards: Flashcard[]) => Flashcard[];
   markAsReviewed: (id: string, difficulty: 'easy' | 'medium' | 'hard') => void;
+  updateFlashcard: (id: string, updates: Partial<Flashcard>) => void;
 }
 
 const StudyTab: React.FC<StudyTabProps> = ({
@@ -17,6 +18,7 @@ const StudyTab: React.FC<StudyTabProps> = ({
   getCardsByCategory,
   shuffleCards,
   markAsReviewed,
+  updateFlashcard,
 }) => {
   const [currentCards, setCurrentCards] = useState<Flashcard[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -141,12 +143,7 @@ const StudyTab: React.FC<StudyTabProps> = ({
 
       <div className="flashcard-container">
         <div className={`flashcard ${isFlipped ? 'flipped' : ''}`}>
-          {/* Top-left category */}
-          <div className="card-category">
-                {currentCard.category}
-          </div>
-          
-          {/* Pencil Button */}
+          {/* Edit Button - positioned outside the flipping content */}
           <button
             className="edit-button"
             onClick={(e) => {
@@ -156,8 +153,13 @@ const StudyTab: React.FC<StudyTabProps> = ({
           >
             ✏️
           </button>
+          
           <div className="flashcard-inner" onClick={handleFlip}>
             <div className="flashcard-front">
+              {/* Category on front */}
+              <div className="card-category">
+                {currentCard.category}
+              </div>
               <div className="card-content">
                 <div className="card-text">
                   <MarkdownText>{currentCard.question}</MarkdownText>
@@ -166,6 +168,10 @@ const StudyTab: React.FC<StudyTabProps> = ({
               <div className="flip-hint">Click to reveal answer</div>
             </div>
             <div className="flashcard-back">
+              {/* Category on back */}
+              <div className="card-category">
+                {currentCard.category}
+              </div>
               <div className="card-content">
                 <div className="card-text">
                   <MarkdownText>{currentCard.answer}</MarkdownText>
@@ -220,7 +226,18 @@ const StudyTab: React.FC<StudyTabProps> = ({
           }
         />
       </div>
-        <button className="btn btn-primary" onClick={() => setShowEditor(false)}>
+        <button 
+          className="btn btn-primary" 
+          onClick={() => {
+            // Save changes to the main flashcards array
+            updateFlashcard(currentCard.id, {
+              question: currentCard.question,
+              answer: currentCard.answer,
+              category: currentCard.category,
+            });
+            setShowEditor(false);
+          }}
+        >
           Save & Close
         </button>
       </div>
