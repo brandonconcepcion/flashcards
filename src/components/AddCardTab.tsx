@@ -36,7 +36,7 @@ const AddCardTab: React.FC<AddCardTabProps> = ({ addFlashcard, getCategories }) 
   return (
     <div className="add-card-tab">
       <div className="card-form">
-        <h2>Add New Flashcard</h2>
+        <h2>Add a New Flashcard</h2>
         
         {showSuccess && (
           <div className="success-message">

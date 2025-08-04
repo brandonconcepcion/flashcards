@@ -25,8 +25,8 @@ function App() {
           <div className="header-title">
             <BookOpen size={32} />
             <div>
-              <h1>Study Flashcards</h1>
-              <p>Your personal interview preparation tool</p>
+              <h1>Brainzlet Concepcion</h1>
+              <p>Personal flashcards for interview preparation</p>
               <small style={{ opacity: 0.8, fontSize: '0.75rem' }}>
                 🔒 All data stored locally on your device
               </small>
