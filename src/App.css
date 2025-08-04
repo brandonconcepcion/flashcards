@@ -1024,6 +1024,7 @@ body {
   border-radius: 4px;
 }
 
+/* Default LaTeX styling for flashcards (study tab) */
 .katex-display {
   background-color: transparent !important;
   color: white !important;
@@ -1031,7 +1032,26 @@ body {
 
 .katex {
   background-color: transparent !important;
+  color: white;
+}
+
+/* LaTeX styling specifically for study tab flashcards */
+.flashcard-back .react-katex {
   color: white !important;
+  background-color: white !important;
+}
+
+.flashcard-back .katex-display {
+  color: white;
+  background-color: transparent !important;
+}
+
+.flashcard .math-block {
+  background: transparent;
+}
+
+.flashcard .math-inline {
+  background: transparent;
 }
 
 /* Responsive Design */
@@ -1210,7 +1230,16 @@ body {
   display: flex;
   align-items: flex-start;
   margin: 0.5rem 0;
-  color: #fdfeff;
+  color: #000000;
+  font-size: 1rem;
+}
+
+.flashcard-back .markdown-list-item,
+.flashcard-back .markdown-ordered-list-item {
+  display: flex;
+  align-items: flex-start;
+  margin: 0.5rem 0;
+  color: #ffffff;
   font-size: 1rem;
 }
 
@@ -1287,12 +1316,21 @@ body {
   border: 1px solid #e5e7eb;
 }
 
-.markdown-text .math-inline {
+.expanded-contentrkdown-paragraph .math-inline {
+  background: transparent;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+ /*border: 1px solid #e0f2fe;*/
+ color: black;
+}
+
+.flashcard-back.markdown-text .math-inline {
   background: transparent;
   padding: 0.1rem 0.3rem;
   border-radius: 3px;
  /*border: 1px solid #e0f2fe;*/
 }
+
 
 .markdown-text .math-error {
   background: #fef2f2;
@@ -1519,19 +1557,48 @@ body {
 
 .card-content .markdown-text {
   color: #374151;
+  text-align: left;
 }
 
 .card-content .markdown-text .markdown-paragraph {
-  color: #374151;
+  color: black;
   margin: 0.5rem 0;
+  text-align: left;
 }
 
 .card-content .markdown-text .markdown-header {
   color: #1f2937;
+  text-align: left;
 }
 
 .card-content .markdown-text .markdown-bold {
   color: #1f2937;
+}
+
+/* LaTeX styling specifically for manage tab */
+.card-content .markdown-text .math-block {
+  text-align: left;
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  background: transparent;
+}
+
+.card-content .markdown-text .math-inline {
+  background: transparent;
+  padding: 0.1rem 0.2rem;
+  border-radius: 3px;
+}
+
+.manage-tab .card-content .katex {
+  color: #374151;
+  background-color: transparent !important;
+}
+
+.card-content .katex-display {
+  color: #374151 !important;
+  background-color: transparent !important;
+  text-align: left !important;
+  margin: 0.5rem 0 !important;
 }
 
 .card-metadata {
@@ -1585,6 +1652,32 @@ body {
   outline: none;
   border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* LaTeX styling for edit form */
+.edit-form .katex {
+  color: #374151 !important;
+  background-color: transparent !important;
+}
+
+.edit-form .katex-display {
+  color: #374151 !important;
+  background-color: transparent !important;
+  text-align: left !important;
+  margin: 0.5rem 0 !important;
+}
+
+.edit-form .math-block {
+  text-align: left;
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  background: transparent;
+}
+
+.edit-form .math-inline {
+  background: transparent;
+  padding: 0.1rem 0.2rem;
+  border-radius: 3px;
 }
 
 .edit-actions {
