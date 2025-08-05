@@ -35,7 +35,7 @@ interface ManageTabProps {
 }
 
 type SortField = 'question' | 'category' | 'difficulty' | 'createdAt';
-type SortDirection = 'asc' | 'desc';
+// type SortDirection = 'asc' | 'desc';
 
 const ManageTab: React.FC<ManageTabProps> = ({
   flashcards,

@@ -37,7 +37,7 @@ interface StudyTabProps {
 const StudyTab: React.FC<StudyTabProps> = ({
   flashcards,
   folders,
-  currentFolder,
+  // currentFolder,
   getCategories,
   getCardsByCategory,
   getCardsByFolder,
