@@ -1,18 +1,20 @@
 import { useState } from 'react';
-// import { BookOpen, Plus, Brain } from 'lucide-react';
-import { BookOpen, Plus, Settings, Brain } from 'lucide-react';
+import { BookOpen, Plus, Settings, Brain, Folder } from 'lucide-react';
 import type { TabType } from './types/flashcard';
 import { useFlashcards } from './hooks/useFlashcards';
 import AIEnhancedAddTab from './components/AIEnhancedAddTab';
 import StudyTab from './components/StudyTab';
 import ManageTab from './components/ManageTab';
+import FoldersTab from './components/FoldersTab';
+import AnimatedCounter from './components/AnimatedCounter';
 import './App.css';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<TabType>('add');
+  const [activeTab, setActiveTab] = useState<TabType>('folders');
   const flashcardHook = useFlashcards();
 
   const tabs = [
+    { id: 'folders' as TabType, label: 'Study Folders', icon: Folder },
     { id: 'add' as TabType, label: 'Add Cards', icon: Plus },
     { id: 'study' as TabType, label: 'Study Mode', icon: Brain },
     { id: 'manage' as TabType, label: 'Manage Cards', icon: Settings },
@@ -33,12 +35,22 @@ function App() {
             </div>
           </div>
           <div className="stats">
-            <span className="stat">
-              {flashcardHook.flashcards.length} cards
-            </span>
-            <span className="stat">
-              {flashcardHook.getCategories().length} categories
-            </span>
+            <div className="stat total-cards-stat">
+              <div className="stat-content">
+                <div className="stat-number">
+                  <AnimatedCounter target={flashcardHook.flashcards.length} duration={1500} delay={0} />
+                </div>
+                <div className="stat-label">total cards</div>
+              </div>
+            </div>
+            <div className="stat folders-stat">
+              <div className="stat-content">
+                <div className="stat-number">
+                  <AnimatedCounter target={flashcardHook.folders.length} duration={1000} delay={400} />
+                </div>
+                <div className="stat-label">folders</div>
+              </div>
+            </div>
           </div>
         </div>
       </header>
@@ -60,6 +72,7 @@ function App() {
       </nav>
 
       <main className="main-content">
+        {activeTab === 'folders' && <FoldersTab {...flashcardHook} />}
         {activeTab === 'add' && <AIEnhancedAddTab {...flashcardHook} />}
         {activeTab === 'study' && <StudyTab {...flashcardHook} />}
         {activeTab === 'manage' && <ManageTab {...flashcardHook} />}

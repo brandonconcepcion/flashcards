@@ -1,14 +1,18 @@
 import React, { useState, useRef } from 'react';
-import { Search, Edit2, Trash2, Calendar, BarChart3, Download, Upload, ChevronRight, ChevronDown, Filter, X } from 'lucide-react';
-import type { Flashcard } from '../types/flashcard';
+import { Search, Edit2, Trash2, Calendar, BarChart3, Download, Upload, ChevronRight, ChevronDown, Filter, X, Folder } from 'lucide-react';
+import type { Flashcard, StudyFolder } from '../types/flashcard';
 import MarkdownText from './MarkdownText';
 
 interface ManageTabProps {
   flashcards: Flashcard[];
+  folders: StudyFolder[];
+  currentFolder: string;
+  setCurrentFolder: (folderId: string) => void;
   updateFlashcard: (id: string, updates: Partial<Flashcard>) => void;
   deleteFlashcard: (id: string) => void;
   searchCards: (query: string) => Flashcard[];
   getCategories: () => string[];
+  getCardsByFolder: (folderId: string) => Flashcard[];
   importFlashcards: (flashcards: Flashcard[]) => void;
 }
 
@@ -17,15 +21,20 @@ type SortDirection = 'asc' | 'desc';
 
 const ManageTab: React.FC<ManageTabProps> = ({
   flashcards,
+  folders,
+  currentFolder,
+  setCurrentFolder,
   updateFlashcard,
   deleteFlashcard,
   searchCards,
   getCategories,
+  getCardsByFolder,
   importFlashcards,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState('');
+  const [selectedFolder, setSelectedFolder] = useState('all');
   const [sortField, setSortField] = useState<SortField>('createdAt');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
@@ -41,7 +50,19 @@ const ManageTab: React.FC<ManageTabProps> = ({
 
   // Filter and sort cards
   const getFilteredAndSortedCards = () => {
-    let filtered = searchQuery ? searchCards(searchQuery) : flashcards;
+    let filtered: Flashcard[];
+    
+    // Apply folder filter first
+    if (selectedFolder === 'all') {
+      filtered = searchQuery ? searchCards(searchQuery) : flashcards;
+    } else {
+      const folderCards = getCardsByFolder(selectedFolder);
+      filtered = searchQuery ? folderCards.filter(card => 
+        card.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        card.answer.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        card.category.toLowerCase().includes(searchQuery.toLowerCase())
+      ) : folderCards;
+    }
 
     // Apply category filter
     if (selectedCategory) {
@@ -216,6 +237,7 @@ const ManageTab: React.FC<ManageTabProps> = ({
   };
 
   const clearFilters = () => {
+    setSelectedFolder('all');
     setSelectedCategory('');
     setSelectedDifficulty('');
     setSearchQuery('');
@@ -230,7 +252,7 @@ const ManageTab: React.FC<ManageTabProps> = ({
     hard: flashcards.filter(card => card.difficulty === 'hard').length,
   };
 
-  const hasActiveFilters = selectedCategory || selectedDifficulty || searchQuery;
+  const hasActiveFilters = selectedFolder !== 'all' || selectedCategory || selectedDifficulty || searchQuery;
 
   return (
     <div className="manage-tab">
@@ -298,6 +320,22 @@ const ManageTab: React.FC<ManageTabProps> = ({
         </div>
         
         <div className="filters">
+          <div className="filter-group">
+            <Folder size={16} />
+            <select
+              value={selectedFolder}
+              onChange={(e) => setSelectedFolder(e.target.value)}
+              className="filter-select"
+            >
+              <option value="all">All Folders</option>
+              {folders.map(folder => (
+                <option key={folder.id} value={folder.id}>
+                  {folder.icon} {folder.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          
           <div className="filter-group">
             <Filter size={16} />
             <select

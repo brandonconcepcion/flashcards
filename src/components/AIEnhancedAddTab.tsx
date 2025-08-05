@@ -5,14 +5,24 @@ import type { AISuggestions } from '../services/aiService';
 import MarkdownText from './MarkdownText';
 
 interface AIEnhancedAddTabProps {
-  addFlashcard: (question: string, answer: string, category: string) => void;
+  addFlashcard: (question: string, answer: string, category: string, folder?: string) => void;
   getCategories: () => string[];
+  folders: any[];
+  currentFolder: string;
+  getFolderById: (id: string) => any;
 }
 
-const AIEnhancedAddTab: React.FC<AIEnhancedAddTabProps> = ({ addFlashcard, getCategories }) => {
+const AIEnhancedAddTab: React.FC<AIEnhancedAddTabProps> = ({ 
+  addFlashcard, 
+  getCategories, 
+  folders, 
+  currentFolder, 
+  getFolderById 
+}) => {
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
   const [category, setCategory] = useState('');
+  const [selectedFolder, setSelectedFolder] = useState(currentFolder);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiSuggestions, setAiSuggestions] = useState<AISuggestions | null>(null);
@@ -24,6 +34,7 @@ const AIEnhancedAddTab: React.FC<AIEnhancedAddTabProps> = ({ addFlashcard, getCa
 
   const existingCategories = getCategories();
   const hasApiKey = aiService.hasApiKey();
+  const currentFolderData = getFolderById(currentFolder);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +43,7 @@ const AIEnhancedAddTab: React.FC<AIEnhancedAddTabProps> = ({ addFlashcard, getCa
       return;
     }
 
-    addFlashcard(question, answer, category);
+    addFlashcard(question, answer, category, selectedFolder);
     
     // Reset form
     setQuestion('');
@@ -232,21 +243,48 @@ const AIEnhancedAddTab: React.FC<AIEnhancedAddTabProps> = ({ addFlashcard, getCa
             )}
           </div>
 
-          <div className="form-group">
-            <label htmlFor="category">Category (optional):</label>
-            <input
-              type="text"
-              id="category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              placeholder="e.g., JavaScript, System Design, Behavioral"
-              list="categories"
-            />
-            <datalist id="categories">
-              {existingCategories.map(cat => (
-                <option key={cat} value={cat} />
-              ))}
-            </datalist>
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="folder">Study Folder:</label>
+              <select
+                id="folder"
+                value={selectedFolder}
+                onChange={(e) => setSelectedFolder(e.target.value)}
+                className="folder-select"
+              >
+                {folders.map(folder => (
+                  <option key={folder.id} value={folder.id}>
+                    {folder.icon} {folder.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group">
+              <label htmlFor="category">Category (optional):</label>
+              <input
+                type="text"
+                id="category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                placeholder="e.g., JavaScript, System Design, Behavioral"
+                list="categories"
+              />
+              <datalist id="categories">
+                {existingCategories.map(cat => (
+                  <option key={cat} value={cat} />
+                ))}
+              </datalist>
+            </div>
+          </div>
+
+          <div className="current-folder-info">
+            <p>
+              <span style={{ fontSize: '1.2rem' }}>{getFolderById(selectedFolder)?.icon}</span>
+              Adding to: <strong>{getFolderById(selectedFolder)?.name}</strong>
+            </p>
+            <p style={{ fontSize: '0.875rem', opacity: 0.7 }}>
+              {getFolderById(selectedFolder)?.description}
+            </p>
           </div>
 
           <button type="submit" className="btn btn-primary">

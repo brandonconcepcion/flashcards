@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, RotateCcw, AlertCircle, Shuffle, CheckCircle } from 'lucide-react';
-import type { Flashcard } from '../types/flashcard';
+import { ChevronLeft, ChevronRight, RotateCcw, AlertCircle, Shuffle, CheckCircle, Folder } from 'lucide-react';
+import type { Flashcard, StudyFolder } from '../types/flashcard';
 import MarkdownText from './MarkdownText';
 
 interface StudyTabProps {
   flashcards: Flashcard[];
+  folders: StudyFolder[];
+  currentFolder: string;
+  setCurrentFolder: (folderId: string) => void;
   getCategories: () => string[];
   getCardsByCategory: (category: string) => Flashcard[];
+  getCardsByFolder: (folderId: string) => Flashcard[];
   shuffleCards: (cards: Flashcard[]) => Flashcard[];
   markAsReviewed: (id: string, difficulty: 'easy' | 'medium' | 'hard') => void;
   updateFlashcard: (id: string, updates: Partial<Flashcard>) => void;
@@ -14,8 +18,12 @@ interface StudyTabProps {
 
 const StudyTab: React.FC<StudyTabProps> = ({
   flashcards,
+  folders,
+  currentFolder,
+  setCurrentFolder,
   getCategories,
   getCardsByCategory,
+  getCardsByFolder,
   shuffleCards,
   markAsReviewed,
   updateFlashcard,
@@ -24,22 +32,41 @@ const StudyTab: React.FC<StudyTabProps> = ({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [studyFolder, setStudyFolder] = useState(currentFolder);
 
   const categories = getCategories();
   const [showEditor, setShowEditor] = useState(false);
 
-  // Initialize cards when component mounts or category changes
+  // Initialize cards when component mounts or folder/category changes
   useEffect(() => {
-    const cards = getCardsByCategory(selectedCategory);
+    let cards: Flashcard[];
+    
+    if (studyFolder === 'all') {
+      // Show all cards across all folders
+      cards = selectedCategory ? getCardsByCategory(selectedCategory) : flashcards;
+    } else {
+      // Show cards from specific folder
+      const folderCards = getCardsByFolder(studyFolder);
+      cards = selectedCategory ? folderCards.filter(card => card.category === selectedCategory) : folderCards;
+    }
+    
     setCurrentCards(cards);
     setCurrentIndex(0);
     setIsFlipped(false);
-  }, [selectedCategory, flashcards, getCardsByCategory]);
+  }, [studyFolder, selectedCategory, flashcards, getCardsByCategory, getCardsByFolder]);
 
   const currentCard = currentCards[currentIndex];
 
   const handleShuffle = () => {
-    const cards = getCardsByCategory(selectedCategory);
+    let cards: Flashcard[];
+    
+    if (studyFolder === 'all') {
+      cards = selectedCategory ? getCardsByCategory(selectedCategory) : flashcards;
+    } else {
+      const folderCards = getCardsByFolder(studyFolder);
+      cards = selectedCategory ? folderCards.filter(card => card.category === selectedCategory) : folderCards;
+    }
+    
     const shuffled = shuffleCards(cards);
     setCurrentCards(shuffled);
     setCurrentIndex(0);
@@ -95,6 +122,18 @@ const StudyTab: React.FC<StudyTabProps> = ({
           <h2>Study Mode</h2>
           <div className="study-controls">
             <select
+              value={studyFolder}
+              onChange={(e) => setStudyFolder(e.target.value)}
+              className="category-select"
+            >
+              <option value="all">All Folders</option>
+              {folders.map(folder => (
+                <option key={folder.id} value={folder.id}>
+                  {folder.icon} {folder.name}
+                </option>
+              ))}
+            </select>
+            <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
               className="category-select"
@@ -110,8 +149,8 @@ const StudyTab: React.FC<StudyTabProps> = ({
         </div>
         <div className="no-cards">
           <AlertCircle size={48} />
-          <h3>No cards in this category</h3>
-          <p>Try selecting a different category or add more cards.</p>
+          <h3>No cards found</h3>
+          <p>Try selecting a different folder/category or add more cards.</p>
         </div>
       </div>
     );
@@ -122,6 +161,18 @@ const StudyTab: React.FC<StudyTabProps> = ({
       <div className="study-header">
         <h2>Study Mode</h2>
         <div className="study-controls">
+          <select
+            value={studyFolder}
+            onChange={(e) => setStudyFolder(e.target.value)}
+            className="category-select"
+          >
+            <option value="all">All Folders</option>
+            {folders.map(folder => (
+              <option key={folder.id} value={folder.id}>
+                {folder.icon} {folder.name}
+              </option>
+            ))}
+          </select>
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
