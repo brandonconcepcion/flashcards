@@ -7,22 +7,35 @@ import MarkdownText from './MarkdownText';
 interface AIEnhancedAddTabProps {
   addFlashcard: (question: string, answer: string, category: string, folder?: string) => void;
   getCategories: () => string[];
+  getCategoriesByFolder: (folderId: string) => string[];
   folders: any[];
   currentFolder: string;
   getFolderById: (id: string) => any;
+  persistentState: {
+    state: {
+      addCardLastCategory: Record<string, string>;
+      addCardSelectedFolder: string;
+    };
+    updateState: (updates: any) => void;
+  };
 }
 
 const AIEnhancedAddTab: React.FC<AIEnhancedAddTabProps> = ({ 
   addFlashcard, 
   getCategories, 
+  getCategoriesByFolder,
   folders, 
   currentFolder, 
-  getFolderById 
+  getFolderById,
+  persistentState
 }) => {
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
-  const [category, setCategory] = useState('');
-  const [selectedFolder, setSelectedFolder] = useState(currentFolder);
+  const [category, setCategory] = useState(() => {
+    const selectedFolder = persistentState.state.addCardSelectedFolder || currentFolder;
+    return persistentState.state.addCardLastCategory[selectedFolder] || '';
+  });
+  const [selectedFolder, setSelectedFolder] = useState(persistentState.state.addCardSelectedFolder || currentFolder);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiSuggestions, setAiSuggestions] = useState<AISuggestions | null>(null);
@@ -32,7 +45,7 @@ const AIEnhancedAddTab: React.FC<AIEnhancedAddTabProps> = ({
   const [showLatexHelp, setShowLatexHelp] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
-  const existingCategories = getCategories();
+  const existingCategories = getCategoriesByFolder(selectedFolder);
   const hasApiKey = aiService.hasApiKey();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -44,10 +57,19 @@ const AIEnhancedAddTab: React.FC<AIEnhancedAddTabProps> = ({
 
     addFlashcard(question, answer, category, selectedFolder);
     
+    // Save the category and folder selection for persistence
+    persistentState.updateState({
+      addCardLastCategory: {
+        ...persistentState.state.addCardLastCategory,
+        [selectedFolder]: category
+      },
+      addCardSelectedFolder: selectedFolder
+    });
+    
     // Reset form
     setQuestion('');
     setAnswer('');
-    setCategory('');
+    // Don't reset category - keep it persistent
     setAiSuggestions(null);
     
     // Show success message
@@ -92,6 +114,17 @@ const AIEnhancedAddTab: React.FC<AIEnhancedAddTabProps> = ({
     if (aiSuggestions?.summary) {
       setAnswer(aiSuggestions.summary);
     }
+  };
+
+  const handleFolderChange = (newFolderId: string) => {
+    setSelectedFolder(newFolderId);
+    // Load the last used category for this folder
+    const lastCategory = persistentState.state.addCardLastCategory[newFolderId] || '';
+    setCategory(lastCategory);
+    // Update persistent state
+    persistentState.updateState({
+      addCardSelectedFolder: newFolderId
+    });
   };
 
   return (
@@ -248,7 +281,7 @@ const AIEnhancedAddTab: React.FC<AIEnhancedAddTabProps> = ({
               <select
                 id="folder"
                 value={selectedFolder}
-                onChange={(e) => setSelectedFolder(e.target.value)}
+                onChange={(e) => handleFolderChange(e.target.value)}
                 className="folder-select"
               >
                 {folders.map(folder => (

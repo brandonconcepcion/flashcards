@@ -27,6 +27,7 @@ interface StudyTabProps {
   shuffleCards: (cards: Flashcard[]) => Flashcard[];
   markAsReviewed: (id: string, difficulty: 'easy' | 'medium' | 'hard') => void;
   updateFlashcard: (id: string, updates: Partial<Flashcard>) => void;
+  getFolderById: (id: string) => StudyFolder | undefined;
   persistentState: {
     state: PersistentState;
     updateState: (updates: Partial<PersistentState>) => void;
@@ -44,6 +45,7 @@ const StudyTab: React.FC<StudyTabProps> = ({
   shuffleCards,
   markAsReviewed,
   updateFlashcard,
+  getFolderById,
   persistentState,
 }) => {
   const [currentCards, setCurrentCards] = useState<Flashcard[]>([]);
@@ -286,33 +288,62 @@ const StudyTab: React.FC<StudyTabProps> = ({
           />
         </div>
         <div className="form-group">
-        <label>Category</label>
-        <input
-          type="text"
-          value={currentCard.category}
-          onChange={(e) =>
-            setCurrentCards((prev) =>
-              prev.map((c, i) =>
-                i === currentIndex ? { ...c, category: e.target.value } : c
+          <label>Category</label>
+          <input
+            type="text"
+            value={currentCard.category}
+            onChange={(e) =>
+              setCurrentCards((prev) =>
+                prev.map((c, i) =>
+                  i === currentIndex ? { ...c, category: e.target.value } : c
+                )
               )
-            )
-          }
-        />
-      </div>
-        <button 
-          className="btn btn-primary" 
-          onClick={() => {
-            // Save changes to the main flashcards array
-            updateFlashcard(currentCard.id, {
-              question: currentCard.question,
-              answer: currentCard.answer,
-              category: currentCard.category,
-            });
-            setShowEditor(false);
-          }}
-        >
-          Save & Close
-        </button>
+            }
+          />
+        </div>
+        <div className="form-group">
+          <label>Folder</label>
+          <select
+            value={currentCard.folder || 'general'}
+            onChange={(e) =>
+              setCurrentCards((prev) =>
+                prev.map((c, i) =>
+                  i === currentIndex ? { ...c, folder: e.target.value } : c
+                )
+              )
+            }
+            className="folder-select"
+          >
+            {folders.map(folder => (
+              <option key={folder.id} value={folder.id}>
+                {folder.icon} {folder.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="modal-actions">
+          <button 
+            className="btn btn-secondary" 
+            onClick={() => setShowEditor(false)}
+          >
+            Cancel
+          </button>
+          <button 
+            className="btn btn-primary" 
+            onClick={() => {
+              // Save changes to the main flashcards array
+              updateFlashcard(currentCard.id, {
+                question: currentCard.question,
+                answer: currentCard.answer,
+                category: currentCard.category,
+                folder: currentCard.folder,
+              });
+              setShowEditor(false);
+            }}
+          >
+            Save & Close
+          </button>
+        </div>
       </div>
     </div>
   )}

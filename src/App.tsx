@@ -75,7 +75,7 @@ function App() {
 
       <main className="main-content">
         {activeTab === 'folders' && <FoldersTab {...flashcardHook} />}
-        {activeTab === 'add' && <AIEnhancedAddTab {...flashcardHook} />}
+        {activeTab === 'add' && <AIEnhancedAddTab {...flashcardHook} persistentState={persistentState} />}
         {activeTab === 'study' && <StudyTab {...flashcardHook} persistentState={persistentState} />}
         {activeTab === 'manage' && <ManageTab {...flashcardHook} persistentState={persistentState} />}
       </main>

@@ -161,6 +161,12 @@ export const useFlashcards = () => {
     return Array.from(categories).sort();
   };
 
+  const getCategoriesByFolder = (folderId: string) => {
+    const folderCards = getCardsByFolder(folderId);
+    const categories = new Set(folderCards.map(card => card.category).filter(Boolean));
+    return Array.from(categories).sort();
+  };
+
   const getCardsByCategory = (category: string = '') => {
     if (!category) return flashcards;
     return flashcards.filter(card => card.category === category);
@@ -256,6 +262,7 @@ export const useFlashcards = () => {
     deleteFlashcard,
     markAsReviewed,
     getCategories,
+    getCategoriesByFolder,
     getCardsByCategory,
     getCardsByFolder,
     searchCards,

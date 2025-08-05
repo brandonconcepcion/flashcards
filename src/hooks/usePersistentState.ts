@@ -14,6 +14,10 @@ interface PersistentState {
   manageSortField: 'question' | 'category' | 'difficulty' | 'createdAt';
   manageSortDirection: 'asc' | 'desc';
   manageExpandedCard: string | null;
+  
+  // Add Card Tab state - persistent category per folder
+  addCardLastCategory: Record<string, string>; // folderId -> last used category
+  addCardSelectedFolder: string;
 }
 
 const defaultState: PersistentState = {
@@ -27,6 +31,8 @@ const defaultState: PersistentState = {
   manageSortField: 'createdAt',
   manageSortDirection: 'desc',
   manageExpandedCard: null,
+  addCardLastCategory: {},
+  addCardSelectedFolder: 'general',
 };
 
 const STORAGE_KEY = 'flashcards-ui-state';
