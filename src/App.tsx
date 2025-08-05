@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { BookOpen, Plus, Settings, Brain, Folder } from 'lucide-react';
 import type { TabType } from './types/flashcard';
 import { useFlashcards } from './hooks/useFlashcards';
+import { usePersistentState } from './hooks/usePersistentState';
 import AIEnhancedAddTab from './components/AIEnhancedAddTab';
 import StudyTab from './components/StudyTab';
 import ManageTab from './components/ManageTab';
@@ -12,6 +13,7 @@ import './App.css';
 function App() {
   const [activeTab, setActiveTab] = useState<TabType>('folders');
   const flashcardHook = useFlashcards();
+  const persistentState = usePersistentState();
 
   const tabs = [
     { id: 'folders' as TabType, label: 'Study Folders', icon: Folder },
@@ -74,8 +76,8 @@ function App() {
       <main className="main-content">
         {activeTab === 'folders' && <FoldersTab {...flashcardHook} />}
         {activeTab === 'add' && <AIEnhancedAddTab {...flashcardHook} />}
-        {activeTab === 'study' && <StudyTab {...flashcardHook} />}
-        {activeTab === 'manage' && <ManageTab {...flashcardHook} />}
+        {activeTab === 'study' && <StudyTab {...flashcardHook} persistentState={persistentState} />}
+        {activeTab === 'manage' && <ManageTab {...flashcardHook} persistentState={persistentState} />}
       </main>
     </div>
   );

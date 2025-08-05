@@ -3,6 +3,19 @@ import { ChevronLeft, ChevronRight, RotateCcw, AlertCircle, Shuffle, CheckCircle
 import type { Flashcard, StudyFolder } from '../types/flashcard';
 import MarkdownText from './MarkdownText';
 
+interface PersistentState {
+  studyCurrentIndex: number;
+  studySelectedCategory: string;
+  studyFolder: string;
+  studyIsFlipped: boolean;
+  manageSearchQuery: string;
+  manageSelectedCategory: string;
+  manageSelectedFolder: string;
+  manageSortField: 'question' | 'category' | 'difficulty' | 'createdAt';
+  manageSortDirection: 'asc' | 'desc';
+  manageExpandedCard: string | null;
+}
+
 interface StudyTabProps {
   flashcards: Flashcard[];
   folders: StudyFolder[];
@@ -14,6 +27,11 @@ interface StudyTabProps {
   shuffleCards: (cards: Flashcard[]) => Flashcard[];
   markAsReviewed: (id: string, difficulty: 'easy' | 'medium' | 'hard') => void;
   updateFlashcard: (id: string, updates: Partial<Flashcard>) => void;
+  persistentState: {
+    state: PersistentState;
+    updateState: (updates: Partial<PersistentState>) => void;
+    resetState: () => void;
+  };
 }
 
 const StudyTab: React.FC<StudyTabProps> = ({
@@ -26,15 +44,18 @@ const StudyTab: React.FC<StudyTabProps> = ({
   shuffleCards,
   markAsReviewed,
   updateFlashcard,
+  persistentState,
 }) => {
   const [currentCards, setCurrentCards] = useState<Flashcard[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isFlipped, setIsFlipped] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [studyFolder, setStudyFolder] = useState(currentFolder);
+  const [showEditor, setShowEditor] = useState(false);
 
   const categories = getCategories();
-  const [showEditor, setShowEditor] = useState(false);
+  
+  // Use persistent state
+  const currentIndex = persistentState.state.studyCurrentIndex;
+  const isFlipped = persistentState.state.studyIsFlipped;
+  const selectedCategory = persistentState.state.studySelectedCategory;
+  const studyFolder = persistentState.state.studyFolder;
 
   // Initialize cards when component mounts or folder/category changes
   useEffect(() => {
@@ -42,17 +63,16 @@ const StudyTab: React.FC<StudyTabProps> = ({
     
     if (studyFolder === 'all') {
       // Show all cards across all folders
-      cards = selectedCategory ? getCardsByCategory(selectedCategory) : flashcards;
+      cards = selectedCategory ? flashcards.filter(card => card.category === selectedCategory) : flashcards;
     } else {
       // Show cards from specific folder
-      const folderCards = getCardsByFolder(studyFolder);
+      const folderCards = flashcards.filter(card => card.folder === studyFolder);
       cards = selectedCategory ? folderCards.filter(card => card.category === selectedCategory) : folderCards;
     }
     
     setCurrentCards(cards);
-    setCurrentIndex(0);
-    setIsFlipped(false);
-  }, [studyFolder, selectedCategory, flashcards, getCardsByCategory, getCardsByFolder]);
+    persistentState.updateState({ studyCurrentIndex: 0, studyIsFlipped: false });
+  }, [studyFolder, selectedCategory, flashcards]);
 
   const currentCard = currentCards[currentIndex];
 
@@ -68,26 +88,29 @@ const StudyTab: React.FC<StudyTabProps> = ({
     
     const shuffled = shuffleCards(cards);
     setCurrentCards(shuffled);
-    setCurrentIndex(0);
-    setIsFlipped(false);
+    persistentState.updateState({ studyCurrentIndex: 0, studyIsFlipped: false });
   };
 
   const handleNext = () => {
     if (currentIndex < currentCards.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-      setIsFlipped(false);
+      persistentState.updateState({ 
+        studyCurrentIndex: currentIndex + 1, 
+        studyIsFlipped: false 
+      });
     }
   };
 
   const handlePrevious = () => {
     if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-      setIsFlipped(false);
+      persistentState.updateState({ 
+        studyCurrentIndex: currentIndex - 1, 
+        studyIsFlipped: false 
+      });
     }
   };
 
   const handleFlip = () => {
-    setIsFlipped(!isFlipped);
+    persistentState.updateState({ studyIsFlipped: !isFlipped });
   };
 
   const handleDifficultyMark = (difficulty: 'easy' | 'medium' | 'hard') => {
@@ -122,7 +145,7 @@ const StudyTab: React.FC<StudyTabProps> = ({
           <div className="study-controls">
             <select
               value={studyFolder}
-              onChange={(e) => setStudyFolder(e.target.value)}
+              onChange={(e) => persistentState.updateState({ studyFolder: e.target.value })}
               className="category-select"
             >
               <option value="all">All Folders</option>
@@ -134,7 +157,7 @@ const StudyTab: React.FC<StudyTabProps> = ({
             </select>
             <select
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              onChange={(e) => persistentState.updateState({ studySelectedCategory: e.target.value })}
               className="category-select"
             >
               <option value="">All Categories</option>
@@ -162,7 +185,7 @@ const StudyTab: React.FC<StudyTabProps> = ({
         <div className="study-controls">
           <select
             value={studyFolder}
-            onChange={(e) => setStudyFolder(e.target.value)}
+            onChange={(e) => persistentState.updateState({ studyFolder: e.target.value })}
             className="category-select"
           >
             <option value="all">All Folders</option>
@@ -174,7 +197,7 @@ const StudyTab: React.FC<StudyTabProps> = ({
           </select>
           <select
             value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
+            onChange={(e) => persistentState.updateState({ studySelectedCategory: e.target.value })}
             className="category-select"
           >
             <option value="">All Categories</option>

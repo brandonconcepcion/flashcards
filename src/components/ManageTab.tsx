@@ -3,6 +3,19 @@ import { Search, Edit2, Trash2, Calendar, BarChart3, Download, Upload, ChevronRi
 import type { Flashcard, StudyFolder } from '../types/flashcard';
 import MarkdownText from './MarkdownText';
 
+interface PersistentState {
+  studyCurrentIndex: number;
+  studySelectedCategory: string;
+  studyFolder: string;
+  studyIsFlipped: boolean;
+  manageSearchQuery: string;
+  manageSelectedCategory: string;
+  manageSelectedFolder: string;
+  manageSortField: 'question' | 'category' | 'difficulty' | 'createdAt';
+  manageSortDirection: 'asc' | 'desc';
+  manageExpandedCard: string | null;
+}
+
 interface ManageTabProps {
   flashcards: Flashcard[];
   folders: StudyFolder[];
@@ -14,6 +27,11 @@ interface ManageTabProps {
   getCategories: () => string[];
   getCardsByFolder: (folderId: string) => Flashcard[];
   importFlashcards: (flashcards: Flashcard[]) => void;
+  persistentState: {
+    state: PersistentState;
+    updateState: (updates: Partial<PersistentState>) => void;
+    resetState: () => void;
+  };
 }
 
 type SortField = 'question' | 'category' | 'difficulty' | 'createdAt';
@@ -28,14 +46,8 @@ const ManageTab: React.FC<ManageTabProps> = ({
   getCategories,
   getCardsByFolder,
   importFlashcards,
+  persistentState,
 }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedDifficulty, setSelectedDifficulty] = useState('');
-  const [selectedFolder, setSelectedFolder] = useState('all');
-  const [sortField, setSortField] = useState<SortField>('createdAt');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-  const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [editingCard, setEditingCard] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({
     question: '',
@@ -45,6 +57,14 @@ const ManageTab: React.FC<ManageTabProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const categories = getCategories();
+  
+  // Use persistent state
+  const searchQuery = persistentState.state.manageSearchQuery;
+  const selectedCategory = persistentState.state.manageSelectedCategory;
+  const selectedFolder = persistentState.state.manageSelectedFolder;
+  const sortField = persistentState.state.manageSortField;
+  const sortDirection = persistentState.state.manageSortDirection;
+  const expandedCard = persistentState.state.manageExpandedCard;
 
   // Filter and sort cards
   const getFilteredAndSortedCards = () => {
@@ -67,10 +87,6 @@ const ManageTab: React.FC<ManageTabProps> = ({
       filtered = filtered.filter(card => card.category === selectedCategory);
     }
 
-    // Apply difficulty filter
-    if (selectedDifficulty) {
-      filtered = filtered.filter(card => card.difficulty === selectedDifficulty);
-    }
 
     // Sort cards
     filtered.sort((a, b) => {
@@ -101,15 +117,14 @@ const ManageTab: React.FC<ManageTabProps> = ({
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+      persistentState.updateState({ manageSortDirection: sortDirection === 'asc' ? 'desc' : 'asc' });
     } else {
-      setSortField(field);
-      setSortDirection('asc');
+      persistentState.updateState({ manageSortField: field, manageSortDirection: 'asc' });
     }
   };
 
   const handleCardClick = (cardId: string) => {
-    setExpandedCard(expandedCard === cardId ? null : cardId);
+    persistentState.updateState({ manageExpandedCard: expandedCard === cardId ? null : cardId });
   };
 
   const handleEdit = (card: Flashcard) => {
@@ -120,7 +135,7 @@ const ManageTab: React.FC<ManageTabProps> = ({
       category: card.category,
     });
     // Ensure the card is expanded when editing
-    setExpandedCard(card.id);
+    persistentState.updateState({ manageExpandedCard: card.id });
   };
 
   const handleSaveEdit = () => {
@@ -141,7 +156,7 @@ const ManageTab: React.FC<ManageTabProps> = ({
     if (window.confirm('Are you sure you want to delete this flashcard?')) {
       deleteFlashcard(id);
       if (expandedCard === id) {
-        setExpandedCard(null);
+        persistentState.updateState({ manageExpandedCard: null });
       }
     }
   };
@@ -235,10 +250,11 @@ const ManageTab: React.FC<ManageTabProps> = ({
   };
 
   const clearFilters = () => {
-    setSelectedFolder('all');
-    setSelectedCategory('');
-    setSelectedDifficulty('');
-    setSearchQuery('');
+    persistentState.updateState({
+      manageSelectedFolder: 'all',
+      manageSelectedCategory: '',
+      manageSearchQuery: ''
+    });
   };
 
   const stats = {
@@ -250,7 +266,7 @@ const ManageTab: React.FC<ManageTabProps> = ({
     hard: flashcards.filter(card => card.difficulty === 'hard').length,
   };
 
-  const hasActiveFilters = selectedFolder !== 'all' || selectedCategory || selectedDifficulty || searchQuery;
+  const hasActiveFilters = selectedFolder !== 'all' || selectedCategory || searchQuery;
 
   return (
     <div className="manage-tab">
@@ -313,7 +329,7 @@ const ManageTab: React.FC<ManageTabProps> = ({
             type="text"
             placeholder="Search your flashcards..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => persistentState.updateState({ manageSearchQuery: e.target.value })}
           />
         </div>
         
@@ -322,7 +338,7 @@ const ManageTab: React.FC<ManageTabProps> = ({
             <Folder size={16} />
             <select
               value={selectedFolder}
-              onChange={(e) => setSelectedFolder(e.target.value)}
+              onChange={(e) => persistentState.updateState({ manageSelectedFolder: e.target.value })}
               className="filter-select"
             >
               <option value="all">All Folders</option>
@@ -338,7 +354,7 @@ const ManageTab: React.FC<ManageTabProps> = ({
             <Filter size={16} />
             <select
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              onChange={(e) => persistentState.updateState({ manageSelectedCategory: e.target.value })}
               className="filter-select"
             >
               <option value="">All Categories</option>
@@ -350,18 +366,6 @@ const ManageTab: React.FC<ManageTabProps> = ({
             </select>
           </div>
           
-          <div className="filter-group">
-            <select
-              value={selectedDifficulty}
-              onChange={(e) => setSelectedDifficulty(e.target.value)}
-              className="filter-select"
-            >
-              <option value="">All Difficulties</option>
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard">Hard</option>
-            </select>
-          </div>
 
           {hasActiveFilters && (
             <button onClick={clearFilters} className="btn btn-secondary btn-sm">

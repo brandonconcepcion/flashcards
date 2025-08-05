@@ -1916,7 +1916,7 @@ body {
 
 .table-header {
   display: grid;
-  grid-template-columns: 40px 1fr 120px 100px 80px 120px;
+  grid-template-columns: 40px 300px 120px 100px 80px 120px;
   background: #f9fafb;
   border-bottom: 1px solid #e5e7eb;
   font-weight: 600;
@@ -1962,7 +1962,7 @@ body {
 
 .table-row {
   display: grid;
-  grid-template-columns: 40px 1fr 120px 100px 80px 120px;
+  grid-template-columns: 40px 300px 120px 100px 80px 120px;
   cursor: pointer;
   transition: background-color 0.2s ease;
   min-height: 60px;
