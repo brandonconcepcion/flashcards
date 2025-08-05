@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, RotateCcw, AlertCircle, Shuffle, CheckCircle, Folder } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RotateCcw, AlertCircle, Shuffle, CheckCircle} from 'lucide-react';
 import type { Flashcard, StudyFolder } from '../types/flashcard';
 import MarkdownText from './MarkdownText';
 

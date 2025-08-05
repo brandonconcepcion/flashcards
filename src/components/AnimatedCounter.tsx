@@ -14,6 +14,7 @@ const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
   className = ''
 }) => {
   const [count, setCount] = useState(0);
+const [, setHasStarted] = useState(false);
 
   useEffect(() => {
     if (target === 0) {
