@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, FolderOpen, Info } from 'lucide-react';
 import type { StudyFolder } from '../types/flashcard';
 

@@ -22,8 +22,6 @@ type SortDirection = 'asc' | 'desc';
 const ManageTab: React.FC<ManageTabProps> = ({
   flashcards,
   folders,
-  currentFolder,
-  setCurrentFolder,
   updateFlashcard,
   deleteFlashcard,
   searchCards,

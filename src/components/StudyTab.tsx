@@ -20,7 +20,6 @@ const StudyTab: React.FC<StudyTabProps> = ({
   flashcards,
   folders,
   currentFolder,
-  setCurrentFolder,
   getCategories,
   getCardsByCategory,
   getCardsByFolder,

@@ -34,7 +34,6 @@ const AIEnhancedAddTab: React.FC<AIEnhancedAddTabProps> = ({
 
   const existingCategories = getCategories();
   const hasApiKey = aiService.hasApiKey();
-  const currentFolderData = getFolderById(currentFolder);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
