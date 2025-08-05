@@ -22,7 +22,7 @@ interface AIEnhancedAddTabProps {
 
 const AIEnhancedAddTab: React.FC<AIEnhancedAddTabProps> = ({ 
   addFlashcard, 
-  getCategories, 
+  // getCategories, 
   getCategoriesByFolder,
   folders, 
   currentFolder, 

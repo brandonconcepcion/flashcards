@@ -45,7 +45,7 @@ const StudyTab: React.FC<StudyTabProps> = ({
   shuffleCards,
   markAsReviewed,
   updateFlashcard,
-  getFolderById,
+  // getFolderById,
   persistentState,
 }) => {
   const [currentCards, setCurrentCards] = useState<Flashcard[]>([]);
