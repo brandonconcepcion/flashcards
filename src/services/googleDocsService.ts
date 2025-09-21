@@ -136,7 +136,7 @@ class GoogleDocsService {
     // Also check if Google's token is still valid
     try {
       if (window.google && window.google.accounts && window.google.accounts.oauth2) {
-        const _tokenClient = window.google.accounts.oauth2.getTokenClient({
+        window.google.accounts.oauth2.getTokenClient({
           client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
           scope: SCOPES,
         });
