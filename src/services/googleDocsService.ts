@@ -44,7 +44,7 @@ class GoogleDocsService {
       // Initialize Google Identity Services
       window.google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
-        callback: (response: any) => {
+        callback: (_response: any) => {
           console.log('Google Identity Services: Token received');
           this.isSignedIn = true;
         }
@@ -104,7 +104,7 @@ class GoogleDocsService {
         window.google.accounts.oauth2.initTokenClient({
           client_id: GOOGLE_CLIENT_ID,
           scope: SCOPES,
-          callback: (response: any) => {
+          callback: (_response: any) => {
             console.log('Google Docs Service: Sign-in successful');
             this.isSignedIn = true;
             resolve(true);
@@ -136,9 +136,9 @@ class GoogleDocsService {
     // Also check if Google's token is still valid
     try {
       if (window.google && window.google.accounts && window.google.accounts.oauth2) {
-        const tokenClient = window.google.accounts.oauth2.getTokenClient({
+        const _tokenClient = window.google.accounts.oauth2.getTokenClient({
           client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-          scope: SCOPES.join(' '),
+          scope: SCOPES,
         });
         return true; // If we can get the token client, we're likely authenticated
       }
@@ -287,107 +287,6 @@ class GoogleDocsService {
     return content;
   }
 
-  private async buildDocumentRequests(options: GoogleDocsExportOptions, documentId: string): Promise<any[]> {
-    const requests: any[] = [];
-    let index = 1; // Start after the title
-
-    // If appending to existing document, get the current content length
-    if (options.appendToExisting && options.existingDocumentId) {
-      try {
-        const doc = await window.gapi.client.docs.documents.get({
-          documentId: documentId
-        });
-        const content = doc.result.body?.content || [];
-        if (content.length > 0) {
-          // Find the last text element to get the end index
-          const lastElement = content[content.length - 1];
-          index = Math.max(lastElement.endIndex || 1, 1);
-          
-          // Add a separator if the document isn't empty
-          const separatorText = `\n\n--- New Export - ${new Date().toLocaleDateString()} ---\n\n`;
-          requests.push({
-            insertText: {
-              location: { index: index - 1 },
-              text: separatorText
-            }
-          });
-          index += separatorText.length;
-        }
-      } catch (error) {
-        console.error('Failed to get existing document:', error);
-        // Fall back to creating new content
-      }
-    } else {
-      // Add header for new document
-      const headerText = `Flashcards Export - ${new Date().toLocaleDateString()}\n\n`;
-      requests.push({
-        insertText: {
-          location: { index },
-          text: headerText
-        }
-      });
-      index += headerText.length;
-    }
-
-    // Add summary if requested
-    if (options.includeStats) {
-      const summary = `Total Cards: ${options.flashcards.length}\n`;
-      const folders = [...new Set(options.flashcards.map(card => card.folder))];
-      const categories = [...new Set(options.flashcards.map(card => card.category))];
-      
-      requests.push({
-        insertText: {
-          location: { index },
-          text: summary + `Folders: ${folders.join(', ')}\n` + `Categories: ${categories.join(', ')}\n\n`
-        }
-      });
-      index += (summary + `Folders: ${folders.join(', ')}\n` + `Categories: ${categories.join(', ')}\n\n`).length;
-    }
-
-    // Add each flashcard with simple formatting
-    options.flashcards.forEach((card, cardIndex) => {
-      // Card header with metadata
-      let cardHeader = `${cardIndex + 1}. `;
-      if (options.includeFolder) {
-        cardHeader += `[${card.folder}] `;
-      }
-      if (options.includeCategory) {
-        cardHeader += `${card.category}\n`;
-      } else {
-        cardHeader += '\n';
-      }
-
-      requests.push({
-        insertText: {
-          location: { index },
-          text: cardHeader
-        }
-      });
-      index += cardHeader.length;
-
-      // Question (simple text, no styling for now)
-      const questionText = `${card.question}\n`;
-      requests.push({
-        insertText: {
-          location: { index },
-          text: questionText
-        }
-      });
-      index += questionText.length;
-
-      // Answer as bullet point (simple text, no styling for now)
-      const answerText = `• ${card.answer}\n\n`;
-      requests.push({
-        insertText: {
-          location: { index },
-          text: answerText
-        }
-      });
-      index += answerText.length;
-    });
-
-    return requests;
-  }
 
   private async moveToFolder(documentId: string, folderId: string): Promise<void> {
     try {

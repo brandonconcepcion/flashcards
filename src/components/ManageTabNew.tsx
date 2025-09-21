@@ -6,12 +6,7 @@ import {
   Download,
   Upload,
   X,
-  Folder,
-  Clock,
-  Target,
   BookOpen,
-  Grid3X3,
-  List,
   SortAsc,
   SortDesc,
   FileText,
@@ -64,7 +59,6 @@ const ManageTab: React.FC<ManageTabProps> = ({
 }) => {
   const [editingCard, setEditingCard] = useState<string | null>(null);
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [editForm, setEditForm] = useState({
     question: "",
     answer: "",

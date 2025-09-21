@@ -57,7 +57,7 @@ const StudyTab: React.FC<StudyTabProps> = ({
 }) => {
   const [currentCards, setCurrentCards] = useState<Flashcard[]>([]);
   const [showEditor, setShowEditor] = useState(false);
-  const [isNavigating, setIsNavigating] = useState(false);
+  const [isNavigating] = useState(false);
   const [skipFlipAnimation, setSkipFlipAnimation] = useState(false);
 
   const categories = getCategories();
