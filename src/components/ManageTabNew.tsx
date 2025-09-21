@@ -14,9 +14,11 @@ import {
   List,
   SortAsc,
   SortDesc,
+  FileText,
 } from "lucide-react";
 import type { Flashcard, StudyFolder } from "../types/flashcard";
 import MarkdownText from "./MarkdownText";
+import GoogleDocsExportModal from "./GoogleDocsExportModal";
 
 interface PersistentState {
   studyCurrentIndex: number;
@@ -61,7 +63,8 @@ const ManageTab: React.FC<ManageTabProps> = ({
   persistentState,
 }) => {
   const [editingCard, setEditingCard] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [expandedCard, setExpandedCard] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [editForm, setEditForm] = useState({
     question: "",
     answer: "",
@@ -69,6 +72,8 @@ const ManageTab: React.FC<ManageTabProps> = ({
     folder: "",
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showGoogleDocsModal, setShowGoogleDocsModal] = useState(false);
+  const [selectedCards] = useState<Set<string>>(new Set());
 
   const categories = getCategories();
 
@@ -136,6 +141,16 @@ const ManageTab: React.FC<ManageTabProps> = ({
       category: card.category,
       folder: card.folder || "general",
     });
+    setExpandedCard(card.id); // Expand the card when editing
+  };
+
+  const handleCardClick = (cardId: string) => {
+    if (expandedCard === cardId) {
+      setExpandedCard(null); // Collapse if already expanded
+    } else {
+      setExpandedCard(cardId); // Expand the clicked card
+    }
+    setEditingCard(null); // Cancel any editing
   };
 
   const handleSaveEdit = () => {
@@ -147,6 +162,7 @@ const ManageTab: React.FC<ManageTabProps> = ({
 
   const handleCancelEdit = () => {
     setEditingCard(null);
+    setExpandedCard(null); // Collapse the card when canceling edit
   };
 
   const handleDelete = (cardId: string) => {
@@ -157,13 +173,14 @@ const ManageTab: React.FC<ManageTabProps> = ({
 
   const handleExport = () => {
     const dataStr = JSON.stringify(flashcards, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
-    const exportFileDefaultName = 'flashcards.json';
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
+    const dataUri =
+      "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
+
+    const exportFileDefaultName = "flashcards.json";
+
+    const linkElement = document.createElement("a");
+    linkElement.setAttribute("href", dataUri);
+    linkElement.setAttribute("download", exportFileDefaultName);
     linkElement.click();
   };
 
@@ -178,14 +195,14 @@ const ManageTab: React.FC<ManageTabProps> = ({
             importFlashcards(importedCards);
           }
         } catch (error) {
-          alert('Error importing flashcards. Please check the file format.');
+          alert("Error importing flashcards. Please check the file format.");
         }
       };
       reader.readAsText(file);
     }
     // Reset the input
     if (event.target) {
-      event.target.value = '';
+      event.target.value = "";
     }
   };
 
@@ -211,16 +228,8 @@ const ManageTab: React.FC<ManageTabProps> = ({
     }
   };
 
-  const stats = {
-    total: flashcards.length,
-    categories: categories.length,
-    reviewed: flashcards.filter((card) => card.lastReviewed).length,
-    easy: flashcards.filter((card) => card.difficulty === "easy").length,
-    medium: flashcards.filter((card) => card.difficulty === "medium").length,
-    hard: flashcards.filter((card) => card.difficulty === "hard").length,
-  };
-
-  const hasActiveFilters = selectedFolder !== "all" || selectedCategory || searchQuery;
+  const hasActiveFilters =
+    selectedFolder !== "all" || selectedCategory || searchQuery;
 
   return (
     <div className="manage-tab-new">
@@ -233,14 +242,22 @@ const ManageTab: React.FC<ManageTabProps> = ({
           </div>
           <div className="action-buttons">
             <button onClick={handleExport} className="action-btn export">
-              <Download size={18} />
+              <Download size={20} />
               <span>Export</span>
+            </button>
+            <button
+              onClick={() => setShowGoogleDocsModal(true)}
+              className="action-btn google-docs"
+              title="Export to Google Docs"
+            >
+              <FileText size={20} />
+              <span>Docs</span>
             </button>
             <button
               onClick={() => fileInputRef.current?.click()}
               className="action-btn import"
             >
-              <Upload size={18} />
+              <Upload size={20} />
               <span>Import</span>
             </button>
             <input
@@ -250,46 +267,6 @@ const ManageTab: React.FC<ManageTabProps> = ({
               onChange={handleImport}
               style={{ display: "none" }}
             />
-          </div>
-        </div>
-
-        {/* Stats Dashboard */}
-        <div className="stats-dashboard">
-          <div className="stat-item">
-            <div className="stat-icon">
-              <BookOpen size={24} />
-            </div>
-            <div className="stat-content">
-              <span className="stat-number">{stats.total}</span>
-              <span className="stat-label">Total Cards</span>
-            </div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-icon">
-              <Folder size={24} />
-            </div>
-            <div className="stat-content">
-              <span className="stat-number">{stats.categories}</span>
-              <span className="stat-label">Categories</span>
-            </div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-icon">
-              <Clock size={24} />
-            </div>
-            <div className="stat-content">
-              <span className="stat-number">{stats.reviewed}</span>
-              <span className="stat-label">Reviewed</span>
-            </div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-icon">
-              <Target size={24} />
-            </div>
-            <div className="stat-content">
-              <span className="stat-number">{displayCards.length}</span>
-              <span className="stat-label">Filtered</span>
-            </div>
           </div>
         </div>
       </div>
@@ -304,7 +281,9 @@ const ManageTab: React.FC<ManageTabProps> = ({
               placeholder="Search cards..."
               value={searchQuery}
               onChange={(e) =>
-                persistentState.updateState({ manageSearchQuery: e.target.value })
+                persistentState.updateState({
+                  manageSearchQuery: e.target.value,
+                })
               }
             />
             {searchQuery && (
@@ -323,7 +302,9 @@ const ManageTab: React.FC<ManageTabProps> = ({
             <select
               value={selectedFolder}
               onChange={(e) =>
-                persistentState.updateState({ manageSelectedFolder: e.target.value })
+                persistentState.updateState({
+                  manageSelectedFolder: e.target.value,
+                })
               }
               className="filter-select"
             >
@@ -338,7 +319,9 @@ const ManageTab: React.FC<ManageTabProps> = ({
             <select
               value={selectedCategory}
               onChange={(e) =>
-                persistentState.updateState({ manageSelectedCategory: e.target.value })
+                persistentState.updateState({
+                  manageSelectedCategory: e.target.value,
+                })
               }
               className="filter-select"
             >
@@ -369,20 +352,7 @@ const ManageTab: React.FC<ManageTabProps> = ({
         </div>
 
         <div className="view-sort-row">
-          <div className="view-toggle">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
-            >
-              <Grid3X3 size={18} />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
-            >
-              <List size={18} />
-            </button>
-          </div>
+          <div className="view-toggle"></div>
 
           <div className="sort-controls">
             <select
@@ -407,14 +377,18 @@ const ManageTab: React.FC<ManageTabProps> = ({
               }
               className="sort-direction"
             >
-              {sortDirection === "asc" ? <SortAsc size={18} /> : <SortDesc size={18} />}
+              {sortDirection === "asc" ? (
+                <SortAsc size={18} />
+              ) : (
+                <SortDesc size={18} />
+              )}
             </button>
           </div>
         </div>
       </div>
 
       {/* Cards Section */}
-      <div className={`cards-container ${viewMode}`}>
+      <div className="cards-list-container">
         {displayCards.length === 0 ? (
           <div className="empty-state">
             <BookOpen size={64} />
@@ -422,14 +396,11 @@ const ManageTab: React.FC<ManageTabProps> = ({
             <p>Try adjusting your filters or add some new flashcards.</p>
           </div>
         ) : (
-          displayCards.map((card) => (
-            <div key={card.id} className="card-item">
-              {editingCard === card.id ? (
-                <div className="edit-form">
-                  <div className="form-header">
-                    <h4>Edit Flashcard</h4>
-                  </div>
-                  <div className="form-body">
+          <div className="cards-vertical-list">
+            {displayCards.map((card, index) => (
+              <div key={card.id} className="card-list-item">
+                {editingCard === card.id ? (
+                  <div className="edit-form-inline">
                     <div className="form-group">
                       <label>Question</label>
                       <textarea
@@ -437,7 +408,7 @@ const ManageTab: React.FC<ManageTabProps> = ({
                         onChange={(e) =>
                           setEditForm({ ...editForm, question: e.target.value })
                         }
-                        rows={3}
+                        rows={2}
                       />
                     </div>
                     <div className="form-group">
@@ -447,7 +418,7 @@ const ManageTab: React.FC<ManageTabProps> = ({
                         onChange={(e) =>
                           setEditForm({ ...editForm, answer: e.target.value })
                         }
-                        rows={3}
+                        rows={2}
                       />
                     </div>
                     <div className="form-row">
@@ -457,7 +428,10 @@ const ManageTab: React.FC<ManageTabProps> = ({
                           type="text"
                           value={editForm.category}
                           onChange={(e) =>
-                            setEditForm({ ...editForm, category: e.target.value })
+                            setEditForm({
+                              ...editForm,
+                              category: e.target.value,
+                            })
                           }
                         />
                       </div>
@@ -477,80 +451,125 @@ const ManageTab: React.FC<ManageTabProps> = ({
                         </select>
                       </div>
                     </div>
-                  </div>
-                  <div className="form-actions">
-                    <button onClick={handleCancelEdit} className="btn-cancel">
-                      Cancel
-                    </button>
-                    <button onClick={handleSaveEdit} className="btn-save">
-                      Save Changes
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="card-content">
-                  <div className="card-header">
-                    <div className="card-meta">
-                      <span className="category">{card.category}</span>
-                      {card.difficulty && (
-                        <span
-                          className="difficulty"
-                          style={{ backgroundColor: getDifficultyColor(card.difficulty) }}
-                        >
-                          {card.difficulty}
-                        </span>
-                      )}
-                    </div>
-                    <div className="card-actions">
-                      <button
-                        onClick={() => handleEdit(card)}
-                        className="action-btn-small edit"
-                      >
-                        <Edit2 size={16} />
+                    <div className="form-actions">
+                      <button onClick={handleCancelEdit} className="btn-cancel">
+                        Cancel
                       </button>
-                      <button
-                        onClick={() => handleDelete(card.id)}
-                        className="action-btn-small delete"
-                      >
-                        <Trash2 size={16} />
+                      <button onClick={handleSaveEdit} className="btn-save">
+                        Save
                       </button>
                     </div>
                   </div>
-
-                  <div className="card-body">
-                    <div className="question-section">
-                      <h4>Question</h4>
-                      <div className="content">
+                ) : (
+                  <>
+                    <div
+                      className="card-list-content"
+                      onClick={() => handleCardClick(card.id)}
+                    >
+                      <div className="card-number">{index + 1}</div>
+                      <div className="card-question">
                         <MarkdownText>{card.question}</MarkdownText>
                       </div>
-                    </div>
-                    <div className="answer-section">
-                      <h4>Answer</h4>
-                      <div className="content">
-                        <MarkdownText>{card.answer}</MarkdownText>
+                      <div className="card-actions">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEdit(card);
+                          }}
+                          className="action-btn edit"
+                          title="Edit card"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(card.id);
+                          }}
+                          className="action-btn delete"
+                          title="Delete card"
+                        >
+                          <Trash2 size={16} />
+                        </button>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="card-footer">
-                    {card.lastReviewed && (
-                      <span className="last-reviewed">
-                        Reviewed: {formatDate(card.lastReviewed.toISOString())}
-                      </span>
+                    {expandedCard === card.id && (
+                      <div className="card-expanded-content">
+                        <div className="expanded-section">
+                          <h4>Question</h4>
+                          <div className="expanded-text">
+                            <MarkdownText>{card.question}</MarkdownText>
+                          </div>
+                        </div>
+                        <div className="expanded-section">
+                          <h4>Answer</h4>
+                          <div className="expanded-text">
+                            <MarkdownText>{card.answer}</MarkdownText>
+                          </div>
+                        </div>
+                        <div className="expanded-meta">
+                          <div className="meta-item">
+                            <span className="meta-label">Category:</span>
+                            <span className="meta-value">{card.category}</span>
+                          </div>
+                          <div className="meta-item">
+                            <span className="meta-label">Folder:</span>
+                            <span className="meta-value">
+                              {folders.find((f) => f.id === card.folder)?.icon}{" "}
+                              {folders.find((f) => f.id === card.folder)?.name}
+                            </span>
+                          </div>
+                          {card.difficulty && (
+                            <div className="meta-item">
+                              <span className="meta-label">Difficulty:</span>
+                              <span
+                                className="meta-value difficulty-badge"
+                                style={{
+                                  backgroundColor: getDifficultyColor(
+                                    card.difficulty
+                                  ),
+                                }}
+                              >
+                                {card.difficulty}
+                              </span>
+                            </div>
+                          )}
+                          <div className="meta-item">
+                            <span className="meta-label">Created:</span>
+                            <span className="meta-value">
+                              {formatDate(card.createdAt.toISOString())}
+                            </span>
+                          </div>
+                          {card.lastReviewed && (
+                            <div className="meta-item">
+                              <span className="meta-label">Last Reviewed:</span>
+                              <span className="meta-value">
+                                {formatDate(card.lastReviewed.toISOString())}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     )}
-                    <span className="created-date">
-                      Created: {formatDate(card.createdAt.toISOString())}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
         )}
       </div>
+
+      {/* Google Docs Export Modal */}
+      <GoogleDocsExportModal
+        isOpen={showGoogleDocsModal}
+        onClose={() => setShowGoogleDocsModal(false)}
+        flashcards={flashcards}
+        folders={folders}
+        selectedCards={selectedCards}
+      />
     </div>
   );
 };
 
 export default ManageTab;
-

@@ -58,6 +58,7 @@ const StudyTab: React.FC<StudyTabProps> = ({
   const [currentCards, setCurrentCards] = useState<Flashcard[]>([]);
   const [showEditor, setShowEditor] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [skipFlipAnimation, setSkipFlipAnimation] = useState(false);
 
   const categories = getCategories();
 
@@ -119,29 +120,43 @@ const StudyTab: React.FC<StudyTabProps> = ({
 
   const handleNext = () => {
     if (currentIndex < currentCards.length - 1) {
-      // If card is flipped, set navigation state for faster animation
+      // If card is flipped, disable flip animation completely
       if (isFlipped) {
-        setIsNavigating(true);
-        setTimeout(() => setIsNavigating(false), 100);
+        setSkipFlipAnimation(true);
+        persistentState.updateState({
+          studyCurrentIndex: currentIndex + 1,
+          studyIsFlipped: false,
+        });
+        // Reset after state update
+        setTimeout(() => setSkipFlipAnimation(false), 50);
+      } else {
+        // Normal navigation when on front
+        persistentState.updateState({
+          studyCurrentIndex: currentIndex + 1,
+          studyIsFlipped: false,
+        });
       }
-      persistentState.updateState({
-        studyCurrentIndex: currentIndex + 1,
-        studyIsFlipped: false,
-      });
     }
   };
 
   const handlePrevious = () => {
     if (currentIndex > 0) {
-      // If card is flipped, set navigation state for faster animation
+      // If card is flipped, disable flip animation completely
       if (isFlipped) {
-        setIsNavigating(true);
-        setTimeout(() => setIsNavigating(false), 100);
+        setSkipFlipAnimation(true);
+        persistentState.updateState({
+          studyCurrentIndex: currentIndex - 1,
+          studyIsFlipped: false,
+        });
+        // Reset after state update
+        setTimeout(() => setSkipFlipAnimation(false), 50);
+      } else {
+        // Normal navigation when on front
+        persistentState.updateState({
+          studyCurrentIndex: currentIndex - 1,
+          studyIsFlipped: false,
+        });
       }
-      persistentState.updateState({
-        studyCurrentIndex: currentIndex - 1,
-        studyIsFlipped: false,
-      });
     }
   };
 
@@ -279,7 +294,13 @@ const StudyTab: React.FC<StudyTabProps> = ({
         <button
           onClick={handleShuffle}
           className="btn btn-secondary"
-          style={{ padding: "6px 12px", fontSize: "0.9rem" }}
+          style={{
+            padding: "6px 12px",
+            fontSize: "0.9rem",
+            background: "var(--card-bg)",
+            border: "1px solid var(--border-primary)",
+            color: "var(--text-primary)",
+          }}
         >
           <Shuffle size={16} />
           Shuffle
@@ -303,7 +324,9 @@ const StudyTab: React.FC<StudyTabProps> = ({
           </button>
 
           <div
-            className={`flashcard-inner ${isNavigating ? "navigating" : ""}`}
+            className={`flashcard-inner ${isNavigating ? "navigating" : ""} ${
+              skipFlipAnimation ? "no-flip" : ""
+            }`}
             onClick={handleFlip}
           >
             <div className="flashcard-front">

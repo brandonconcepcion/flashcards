@@ -207,18 +207,19 @@
   width: 100%;
   height: 500px;
   text-align: center;
-  transition: transform 0.3s;
+  transition: transform 0.4s;
   transform-style: preserve-3d;
   cursor: pointer;
 }
 
-/* Faster animation during navigation */
-.flashcard-inner.navigating {
-  transition: transform 0.1s;
+/* No animation when navigating from back */
+.flashcard-inner.no-flip {
+  transition: none !important;
 }
 
+
 .flashcard.flipped .flashcard-inner {
-  transform: rotateY(180deg);
+  transform: rotateX(180deg);
 }
 
 .flashcard-front,
@@ -238,13 +239,13 @@
 
 .flashcard-front {
   background: var(--header-gradient);
-  color: var(--text-inverse);
+  color: white;
 }
 
 .flashcard-back {
   background: var(--card-bg);
   color: var(--text-primary);
-  transform: rotateY(180deg);
+  transform: rotateX(180deg);
   border: 2px solid var(--border-primary);
   justify-content: flex-start;
   align-items: flex-start;
@@ -261,6 +262,9 @@
   letter-spacing: 0.5px;
   font-weight: 500;
   color: white;
+  background: transparent;
+  padding: 4px 8px;
+  border-radius: 4px;
 }
 
 .card-content {

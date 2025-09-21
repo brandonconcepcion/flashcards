@@ -1,118 +1,118 @@
 /* Theme Variables */
 
-/* Light Theme (Default) */
+/* Light Theme (Default) - Dark Teal */
 :root,
 .light {
-  /* Primary Colors */
-  --primary-color: #667eea;
-  --primary-hover: #5a67d8;
-  --primary-light: #c7d2fe;
-  --primary-bg: #f0f9ff;
+  /* Primary Colors - Dark Teal */
+  --primary-color: #0d9488;
+  --primary-hover: #0f766e;
+  --primary-light: #ccfbf1;
+  --primary-bg: #f0fdfa;
   
-  /* Background Colors */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8fafc;
-  --bg-tertiary: #f1f5f9;
-  --bg-accent: #e2e8f0;
+  /* Background Colors - Darker & Modern */
+  --bg-primary: #0f1419;
+  --bg-secondary: #1a202c;
+  --bg-tertiary: #2d3748;
+  --bg-accent: #4a5568;
   
-  /* Text Colors */
-  --text-primary: #1e293b;
-  --text-secondary: #475569;
-  --text-tertiary: #64748b;
-  --text-muted: #94a3b8;
-  --text-inverse: #ffffff;
-  
-  /* Border Colors */
-  --border-primary: #e2e8f0;
-  --border-secondary: #cbd5e1;
-  --border-accent: #94a3b8;
-  
-  /* Status Colors */
-  --success-color: #22c55e;
-  --success-bg: #f0fdf4;
-  --warning-color: #f59e0b;
-  --warning-bg: #fffbeb;
-  --error-color: #ef4444;
-  --error-bg: #fef2f2;
-  --info-color: #3b82f6;
-  --info-bg: #eff6ff;
-  
-  /* Shadow */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  
-  /* Header Gradient */
-  --header-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  
-  /* Card Colors */
-  --card-bg: #ffffff;
-  --card-border: #e2e8f0;
-  --card-hover-border: #c7d2fe;
-  
-  /* Input Colors */
-  --input-bg: #ffffff;
-  --input-border: #d1d5db;
-  --input-focus: #667eea;
-  --input-placeholder: #9ca3af;
-}
-
-/* Dark Theme */
-.dark {
-  /* Primary Colors */
-  --primary-color: #818cf8;
-  --primary-hover: #6366f1;
-  --primary-light: #4338ca;
-  --primary-bg: #312e81;
-  
-  /* Background Colors */
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --bg-tertiary: #334155;
-  --bg-accent: #475569;
-  
-  /* Text Colors */
-  --text-primary: #f8fafc;
+  /* Text Colors - Light for Dark Background */
+  --text-primary: #f7fafc;
   --text-secondary: #e2e8f0;
   --text-tertiary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --text-inverse: #0f172a;
+  --text-muted: #a0aec0;
+  --text-inverse: #0f1419;
   
-  /* Border Colors */
-  --border-primary: #334155;
-  --border-secondary: #475569;
-  --border-accent: #64748b;
+  /* Border Colors - Subtle & Refined */
+  --border-primary: #2d3748;
+  --border-secondary: #4a5568;
+  --border-accent: #718096;
   
-  /* Status Colors */
-  --success-color: #34d399;
+  /* Status Colors - Modern & Vibrant */
+  --success-color: #38a169;
   --success-bg: #064e3b;
-  --warning-color: #fbbf24;
+  --warning-color: #d69e2e;
   --warning-bg: #451a03;
-  --error-color: #f87171;
+  --error-color: #e53e3e;
   --error-bg: #7f1d1d;
-  --info-color: #60a5fa;
+  --info-color: #3182ce;
   --info-bg: #1e3a8a;
   
-  /* Shadow (adjusted for dark theme) */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.3);
+  /* Shadow - Enhanced for Dark Theme */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
   
-  /* Header Gradient */
-  --header-gradient: linear-gradient(135deg, #4338ca 0%, #6366f1 100%);
+  /* Header Gradient - Dark Teal Gradient */
+  --header-gradient: linear-gradient(135deg, #0d9488 0%, #0f766e 50%, #115e59 100%);
   
-  /* Card Colors */
-  --card-bg: #1e293b;
-  --card-border: #334155;
-  --card-hover-border: #4338ca;
+  /* Card Colors - Dark & Elegant */
+  --card-bg: #1a202c;
+  --card-border: #2d3748;
+  --card-hover-border: #0d9488;
   
-  /* Input Colors */
-  --input-bg: #334155;
-  --input-border: #475569;
-  --input-focus: #818cf8;
-  --input-placeholder: #64748b;
+  /* Input Colors - Dark & Modern */
+  --input-bg: #2d3748;
+  --input-border: #4a5568;
+  --input-focus: #0d9488;
+  --input-placeholder: #a0aec0;
+}
+
+/* Dark Theme - Darker Teal */
+.dark {
+  /* Primary Colors - Darker Teal */
+  --primary-color: #0f766e;
+  --primary-hover: #115e59;
+  --primary-light: #134e4a;
+  --primary-bg: #0f1419;
+  
+  /* Background Colors - Even Darker */
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #0f1419;
+  --bg-tertiary: #1a202c;
+  --bg-accent: #2d3748;
+  
+  /* Text Colors - High Contrast & Readable */
+  --text-primary: #f7fafc;
+  --text-secondary: #e2e8f0;
+  --text-tertiary: #cbd5e1;
+  --text-muted: #a0aec0;
+  --text-inverse: #0a0a0a;
+  
+  /* Border Colors - Subtle & Refined */
+  --border-primary: #2d3748;
+  --border-secondary: #4a5568;
+  --border-accent: #718096;
+  
+  /* Status Colors - Vibrant & Modern */
+  --success-color: #38a169;
+  --success-bg: #064e3b;
+  --warning-color: #d69e2e;
+  --warning-bg: #451a03;
+  --error-color: #e53e3e;
+  --error-bg: #7f1d1d;
+  --info-color: #3182ce;
+  --info-bg: #1e3a8a;
+  
+  /* Shadow - Enhanced for Dark Theme */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.5);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.5);
+  
+  /* Header Gradient - Darker Teal Gradient */
+  --header-gradient: linear-gradient(135deg, #0f766e 0%, #115e59 50%, #134e4a 100%);
+  
+  /* Card Colors - Dark & Elegant */
+  --card-bg: #0f1419;
+  --card-border: #2d3748;
+  --card-hover-border: #0f766e;
+  
+  /* Input Colors - Dark & Modern */
+  --input-bg: #1a202c;
+  --input-border: #4a5568;
+  --input-focus: #0f766e;
+  --input-placeholder: #a0aec0;
 }
 
 /* Theme Transition */
@@ -198,4 +198,5 @@
   line-height: 1.5;
   margin: 0;
 }
+
 

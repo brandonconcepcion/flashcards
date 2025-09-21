@@ -23,7 +23,7 @@ import AnimatedCounter from "./components/AnimatedCounter";
 import SettingsTab from "./components/SettingsTab";
 
 function App() {
-  const [activeTab, setActiveTab] = useState<TabType>("folders");
+  const [activeTab, setActiveTab] = useState<TabType>("study");
   const [isEditingTimer, setIsEditingTimer] = useState(false);
   const [timerInputValue, setTimerInputValue] = useState("25");
   const flashcardHook = useFlashcards();
@@ -34,11 +34,11 @@ function App() {
   const SHOW_RESUME_GRILLER = false;
 
   const tabs = [
-    { id: "folders" as TabType, label: "Study Folders", icon: Folder },
-    { id: "add" as TabType, label: "Add Cards", icon: Plus },
     { id: "study" as TabType, label: "Study Mode", icon: BookOpen },
+    { id: "add" as TabType, label: "Add Cards", icon: Plus },
     { id: "manage" as TabType, label: "Manage Cards", icon: Settings },
     { id: "settings" as TabType, label: "Settings", icon: Cog },
+    { id: "folders" as TabType, label: "Study Folders", icon: Folder },
   ];
 
   return (
@@ -46,7 +46,7 @@ function App() {
       <header
         className="app-header"
         style={{
-          backgroundImage: "linear-gradient(135deg, #1e293b 0%, #334155 100%)",
+          backgroundImage: "var(--header-gradient)",
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
@@ -55,11 +55,10 @@ function App() {
         <div className="header-content">
           <div className="header-brand">
             <div className="brand-icon">
-              <BookOpen size={24} />
+              <span className="brain-emoji">🧠</span>
             </div>
             <div className="brand-text">
               <h1>Brainzlet</h1>
-              <span className="brand-subtitle">Flashcards</span>
             </div>
 
             {/* Timer Controls - moved next to brand */}
@@ -233,10 +232,7 @@ function App() {
         <main className="main-content">
           {activeTab === "folders" && <FoldersTab {...flashcardHook} />}
           {activeTab === "add" && (
-            <AddTab
-              {...flashcardHook}
-              persistentState={persistentState}
-            />
+            <AddTab {...flashcardHook} persistentState={persistentState} />
           )}
           {activeTab === "study" && (
             <StudyTab {...flashcardHook} persistentState={persistentState} />

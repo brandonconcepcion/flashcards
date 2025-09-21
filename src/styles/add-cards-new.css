@@ -3,30 +3,10 @@
 .add-cards-tab {
   max-width: 100%;
   padding: 0;
+  background: var(--bg-secondary);
+  min-height: 100%;
 }
 
-/* Header Section */
-.add-cards-header {
-  background: var(--header-gradient);
-  color: var(--text-inverse);
-  padding: 32px;
-  border-radius: 16px;
-  margin-bottom: 32px;
-  text-align: center;
-}
-
-.add-cards-header h2 {
-  font-size: 2.2rem;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: var(--text-inverse);
-}
-
-.add-cards-header p {
-  font-size: 1.1rem;
-  opacity: 0.9;
-  margin: 0;
-}
 
 /* Success Message */
 .success-message {
@@ -171,26 +151,17 @@
 .folder-select-enhanced select {
   appearance: none;
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-  background-position: right 16px center;
+  background-position: right 20px center;
   background-repeat: no-repeat;
   background-size: 16px;
-  padding-right: 48px;
+  padding-right: 52px;
 }
 
-/* Action Buttons */
-.form-actions {
-  display: flex;
-  gap: 16px;
-  justify-content: center;
-  margin-top: 32px;
-  padding-top: 24px;
-  border-top: 1px solid var(--border-primary);
-}
 
 .btn-primary-enhanced {
-  background: var(--header-gradient);
-  color: var(--text-inverse);
-  border: none;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  border: 2px solid var(--border-primary);
   padding: 14px 32px;
   border-radius: 12px;
   font-size: 1rem;
@@ -202,12 +173,14 @@
   gap: 8px;
   min-width: 160px;
   justify-content: center;
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-primary-enhanced:hover {
+  background: var(--primary-color);
+  color: white;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 20px rgba(13, 148, 136, 0.4);
 }
 
 .btn-primary-enhanced:active {
@@ -289,13 +262,6 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .add-cards-header {
-    padding: 24px;
-  }
-  
-  .add-cards-header h2 {
-    font-size: 1.8rem;
-  }
   
   .add-card-form {
     padding: 24px;
@@ -306,10 +272,6 @@
     gap: 16px;
   }
   
-  .form-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
   
   .btn-primary-enhanced,
   .btn-secondary-enhanced {
@@ -322,13 +284,6 @@
 }
 
 @media (max-width: 480px) {
-  .add-cards-header {
-    padding: 20px;
-  }
-  
-  .add-cards-header h2 {
-    font-size: 1.6rem;
-  }
   
   .add-card-form {
     padding: 20px;

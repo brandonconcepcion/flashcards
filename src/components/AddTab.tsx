@@ -89,15 +89,6 @@ const AddTab: React.FC<AddTabProps> = ({
 
   return (
     <div className="add-cards-tab">
-      <div className="add-cards-header" style={{ padding: "20px 24px" }}>
-        <h2 style={{ fontSize: "1.5rem", margin: "0 0 4px 0" }}>
-          Create Flashcard
-        </h2>
-        <p style={{ margin: "0", fontSize: "0.9rem" }}>
-          Build your knowledge base
-        </p>
-      </div>
-
       <div
         className="current-folder-info"
         style={{
@@ -266,9 +257,24 @@ const AddTab: React.FC<AddTabProps> = ({
               )}
             </div>
           </div>
-
-          <div className="form-actions">
-            <button type="submit" className="btn-primary-enhanced">
+          {/* Add Flashcard Button - bottom right of form */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginTop: "32px",
+              paddingTop: "24px",
+              borderTop: "1px solid var(--border-primary)",
+            }}
+          >
+            <button
+              type="submit"
+              className="btn-primary-enhanced"
+              onClick={(e) => {
+                e.preventDefault();
+                handleSubmit(e as any);
+              }}
+            >
               <Plus size={20} />
               Add Flashcard
             </button>
