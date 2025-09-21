@@ -245,7 +245,7 @@ const ResumeGrillerTab: React.FC<ResumeGrillerTabProps> = ({
     
     try {
       // AI service removed - using mock data
-      const result = [];
+      const result: ResumeQuestion[] = [];
       setQuestions(result);
       setSelectedQuestions(new Set()); // Clear previous selections
     } catch (error) {

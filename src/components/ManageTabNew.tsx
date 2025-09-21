@@ -5,7 +5,6 @@ import {
   Trash2,
   Download,
   Upload,
-  Filter,
   X,
   Folder,
   Clock,
@@ -536,11 +535,11 @@ const ManageTab: React.FC<ManageTabProps> = ({
                   <div className="card-footer">
                     {card.lastReviewed && (
                       <span className="last-reviewed">
-                        Reviewed: {formatDate(card.lastReviewed)}
+                        Reviewed: {formatDate(card.lastReviewed.toISOString())}
                       </span>
                     )}
                     <span className="created-date">
-                      Created: {formatDate(card.createdAt)}
+                      Created: {formatDate(card.createdAt.toISOString())}
                     </span>
                   </div>
                 </div>
@@ -554,3 +553,4 @@ const ManageTab: React.FC<ManageTabProps> = ({
 };
 
 export default ManageTab;
+

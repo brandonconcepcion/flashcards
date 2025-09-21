@@ -19,11 +19,5 @@ export interface StudyFolder {
   createdAt: Date;
 }
 
-export interface StudySession {
-  currentIndex: number;
-  cards: Flashcard[];
-  isFlipped: boolean;
-  showAnswer: boolean;
-}
 
 export type TabType = 'add' | 'study' | 'manage' | 'folders' | 'resume-griller' | 'settings';

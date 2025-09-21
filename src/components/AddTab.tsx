@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Plus, Eye, Check } from "lucide-react";
-import type { Folder, Flashcard } from "../types/flashcard";
+import type { StudyFolder } from "../types/flashcard";
 import MarkdownText from "./MarkdownText";
 
 interface AddTabProps {
@@ -11,9 +11,9 @@ interface AddTabProps {
     folder: string
   ) => void;
   getCategoriesByFolder: (folderId: string) => string[];
-  folders: Folder[];
+  folders: StudyFolder[];
   currentFolder: string;
-  getFolderById: (id: string) => Folder | undefined;
+  getFolderById: (id: string) => StudyFolder | undefined;
   persistentState: {
     state: {
       addCardSelectedFolder: string;
