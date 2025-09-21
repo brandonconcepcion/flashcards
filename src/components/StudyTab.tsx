@@ -1,7 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, RotateCcw, AlertCircle, Shuffle, CheckCircle} from 'lucide-react';
-import type { Flashcard, StudyFolder } from '../types/flashcard';
-import MarkdownText from './MarkdownText';
+import React, { useState, useEffect } from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  RotateCcw,
+  AlertCircle,
+  Shuffle,
+  CheckCircle,
+} from "lucide-react";
+import type { Flashcard, StudyFolder } from "../types/flashcard";
+import MarkdownText from "./MarkdownText";
 
 interface PersistentState {
   studyCurrentIndex: number;
@@ -11,8 +18,8 @@ interface PersistentState {
   manageSearchQuery: string;
   manageSelectedCategory: string;
   manageSelectedFolder: string;
-  manageSortField: 'question' | 'category' | 'difficulty' | 'createdAt';
-  manageSortDirection: 'asc' | 'desc';
+  manageSortField: "question" | "category" | "difficulty" | "createdAt";
+  manageSortDirection: "asc" | "desc";
   manageExpandedCard: string | null;
 }
 
@@ -25,7 +32,7 @@ interface StudyTabProps {
   getCardsByCategory: (category: string) => Flashcard[];
   getCardsByFolder: (folderId: string) => Flashcard[];
   shuffleCards: (cards: Flashcard[]) => Flashcard[];
-  markAsReviewed: (id: string, difficulty: 'easy' | 'medium' | 'hard') => void;
+  markAsReviewed: (id: string, difficulty: "easy" | "medium" | "hard") => void;
   updateFlashcard: (id: string, updates: Partial<Flashcard>) => void;
   getFolderById: (id: string) => StudyFolder | undefined;
   persistentState: {
@@ -50,9 +57,10 @@ const StudyTab: React.FC<StudyTabProps> = ({
 }) => {
   const [currentCards, setCurrentCards] = useState<Flashcard[]>([]);
   const [showEditor, setShowEditor] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const categories = getCategories();
-  
+
   // Use persistent state
   const currentIndex = persistentState.state.studyCurrentIndex;
   const isFlipped = persistentState.state.studyIsFlipped;
@@ -62,51 +70,77 @@ const StudyTab: React.FC<StudyTabProps> = ({
   // Initialize cards when component mounts or folder/category changes
   useEffect(() => {
     let cards: Flashcard[];
-    
-    if (studyFolder === 'all') {
+
+    if (studyFolder === "all") {
       // Show all cards across all folders
-      cards = selectedCategory ? flashcards.filter(card => card.category === selectedCategory) : flashcards;
+      cards = selectedCategory
+        ? flashcards.filter((card) => card.category === selectedCategory)
+        : flashcards;
     } else {
       // Show cards from specific folder
-      const folderCards = flashcards.filter(card => card.folder === studyFolder);
-      cards = selectedCategory ? folderCards.filter(card => card.category === selectedCategory) : folderCards;
+      const folderCards = flashcards.filter(
+        (card) => card.folder === studyFolder
+      );
+      cards = selectedCategory
+        ? folderCards.filter((card) => card.category === selectedCategory)
+        : folderCards;
     }
-    
+
     setCurrentCards(cards);
-    persistentState.updateState({ studyCurrentIndex: 0, studyIsFlipped: false });
+    persistentState.updateState({
+      studyCurrentIndex: 0,
+      studyIsFlipped: false,
+    });
   }, [studyFolder, selectedCategory, flashcards]);
 
   const currentCard = currentCards[currentIndex];
 
   const handleShuffle = () => {
     let cards: Flashcard[];
-    
-    if (studyFolder === 'all') {
-      cards = selectedCategory ? getCardsByCategory(selectedCategory) : flashcards;
+
+    if (studyFolder === "all") {
+      cards = selectedCategory
+        ? getCardsByCategory(selectedCategory)
+        : flashcards;
     } else {
       const folderCards = getCardsByFolder(studyFolder);
-      cards = selectedCategory ? folderCards.filter(card => card.category === selectedCategory) : folderCards;
+      cards = selectedCategory
+        ? folderCards.filter((card) => card.category === selectedCategory)
+        : folderCards;
     }
-    
+
     const shuffled = shuffleCards(cards);
     setCurrentCards(shuffled);
-    persistentState.updateState({ studyCurrentIndex: 0, studyIsFlipped: false });
+    persistentState.updateState({
+      studyCurrentIndex: 0,
+      studyIsFlipped: false,
+    });
   };
 
   const handleNext = () => {
     if (currentIndex < currentCards.length - 1) {
-      persistentState.updateState({ 
-        studyCurrentIndex: currentIndex + 1, 
-        studyIsFlipped: false 
+      // If card is flipped, set navigation state for faster animation
+      if (isFlipped) {
+        setIsNavigating(true);
+        setTimeout(() => setIsNavigating(false), 100);
+      }
+      persistentState.updateState({
+        studyCurrentIndex: currentIndex + 1,
+        studyIsFlipped: false,
       });
     }
   };
 
   const handlePrevious = () => {
     if (currentIndex > 0) {
-      persistentState.updateState({ 
-        studyCurrentIndex: currentIndex - 1, 
-        studyIsFlipped: false 
+      // If card is flipped, set navigation state for faster animation
+      if (isFlipped) {
+        setIsNavigating(true);
+        setTimeout(() => setIsNavigating(false), 100);
+      }
+      persistentState.updateState({
+        studyCurrentIndex: currentIndex - 1,
+        studyIsFlipped: false,
       });
     }
   };
@@ -115,7 +149,7 @@ const StudyTab: React.FC<StudyTabProps> = ({
     persistentState.updateState({ studyIsFlipped: !isFlipped });
   };
 
-  const handleDifficultyMark = (difficulty: 'easy' | 'medium' | 'hard') => {
+  const handleDifficultyMark = (difficulty: "easy" | "medium" | "hard") => {
     if (currentCard) {
       markAsReviewed(currentCard.id, difficulty);
       // Auto advance to next card
@@ -142,34 +176,50 @@ const StudyTab: React.FC<StudyTabProps> = ({
   if (currentCards.length === 0) {
     return (
       <div className="study-tab">
-        <div className="study-header">
-          <h2>Study Mode</h2>
-          <div className="study-controls">
-            <select
-              value={studyFolder}
-              onChange={(e) => persistentState.updateState({ studyFolder: e.target.value })}
-              className="category-select"
-            >
-              <option value="all">All Folders</option>
-              {folders.map(folder => (
-                <option key={folder.id} value={folder.id}>
-                  {folder.icon} {folder.name}
-                </option>
-              ))}
-            </select>
-            <select
-              value={selectedCategory}
-              onChange={(e) => persistentState.updateState({ studySelectedCategory: e.target.value })}
-              className="category-select"
-            >
-              <option value="">All Categories</option>
-              {categories.map(category => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-          </div>
+        <div
+          style={{
+            display: "flex",
+            gap: "12px",
+            alignItems: "center",
+            marginBottom: "8px",
+            padding: "12px",
+            background: "var(--bg-secondary)",
+            borderRadius: "8px",
+            border: "1px solid var(--border-primary)",
+          }}
+        >
+          <select
+            value={studyFolder}
+            onChange={(e) =>
+              persistentState.updateState({ studyFolder: e.target.value })
+            }
+            className="category-select"
+            style={{ minWidth: "150px" }}
+          >
+            <option value="all">All Folders</option>
+            {folders.map((folder) => (
+              <option key={folder.id} value={folder.id}>
+                {folder.icon} {folder.name}
+              </option>
+            ))}
+          </select>
+          <select
+            value={selectedCategory}
+            onChange={(e) =>
+              persistentState.updateState({
+                studySelectedCategory: e.target.value,
+              })
+            }
+            className="category-select"
+            style={{ minWidth: "120px" }}
+          >
+            <option value="">All Categories</option>
+            {categories.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
         </div>
         <div className="no-cards">
           <AlertCircle size={48} />
@@ -182,42 +232,65 @@ const StudyTab: React.FC<StudyTabProps> = ({
 
   return (
     <div className="study-tab">
-      <div className="study-header">
-        <h2>Study Mode</h2>
-        <div className="study-controls">
-          <select
-            value={studyFolder}
-            onChange={(e) => persistentState.updateState({ studyFolder: e.target.value })}
-            className="category-select"
-          >
-            <option value="all">All Folders</option>
-            {folders.map(folder => (
-              <option key={folder.id} value={folder.id}>
-                {folder.icon} {folder.name}
-              </option>
-            ))}
-          </select>
-          <select
-            value={selectedCategory}
-            onChange={(e) => persistentState.updateState({ studySelectedCategory: e.target.value })}
-            className="category-select"
-          >
-            <option value="">All Categories</option>
-            {categories.map(category => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
-          <button onClick={handleShuffle} className="btn btn-secondary">
-            <Shuffle size={16} />
-            Shuffle
-          </button>
-        </div>
+      <div
+        style={{
+          display: "flex",
+          gap: "12px",
+          alignItems: "center",
+          marginBottom: "16px",
+          padding: "12px",
+          background: "var(--bg-secondary)",
+          borderRadius: "8px",
+          border: "1px solid var(--border-primary)",
+        }}
+      >
+        <select
+          value={studyFolder}
+          onChange={(e) =>
+            persistentState.updateState({ studyFolder: e.target.value })
+          }
+          className="category-select"
+          style={{ minWidth: "150px" }}
+        >
+          <option value="all">All Folders</option>
+          {folders.map((folder) => (
+            <option key={folder.id} value={folder.id}>
+              {folder.icon} {folder.name}
+            </option>
+          ))}
+        </select>
+        <select
+          value={selectedCategory}
+          onChange={(e) =>
+            persistentState.updateState({
+              studySelectedCategory: e.target.value,
+            })
+          }
+          className="category-select"
+          style={{ minWidth: "120px" }}
+        >
+          <option value="">All Categories</option>
+          {categories.map((category) => (
+            <option key={category} value={category}>
+              {category}
+            </option>
+          ))}
+        </select>
+        <button
+          onClick={handleShuffle}
+          className="btn btn-secondary"
+          style={{ padding: "6px 12px", fontSize: "0.9rem" }}
+        >
+          <Shuffle size={16} />
+          Shuffle
+        </button>
       </div>
 
-      <div className="flashcard-container">
-        <div className={`flashcard ${isFlipped ? 'flipped' : ''}`}>
+      <div
+        className="flashcard-container"
+        style={{ flexDirection: "column", gap: "20px" }}
+      >
+        <div className={`flashcard ${isFlipped ? "flipped" : ""}`}>
           {/* Edit Button - positioned outside the flipping content */}
           <button
             className="edit-button"
@@ -228,13 +301,14 @@ const StudyTab: React.FC<StudyTabProps> = ({
           >
             ✏️
           </button>
-          
-          <div className="flashcard-inner" onClick={handleFlip}>
+
+          <div
+            className={`flashcard-inner ${isNavigating ? "navigating" : ""}`}
+            onClick={handleFlip}
+          >
             <div className="flashcard-front">
               {/* Category on front */}
-              <div className="card-category">
-                {currentCard.category}
-              </div>
+              <div className="card-category">{currentCard.category}</div>
               <div className="card-content">
                 <div className="card-text">
                   <MarkdownText>{currentCard.question}</MarkdownText>
@@ -244,9 +318,7 @@ const StudyTab: React.FC<StudyTabProps> = ({
             </div>
             <div className="flashcard-back">
               {/* Category on back */}
-              <div className="card-category">
-                {currentCard.category}
-              </div>
+              <div className="card-category">{currentCard.category}</div>
               <div className="card-content">
                 <div className="card-text">
                   <MarkdownText>{currentCard.answer}</MarkdownText>
@@ -256,140 +328,163 @@ const StudyTab: React.FC<StudyTabProps> = ({
             </div>
           </div>
         </div>
-      </div>
-      {showEditor && (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <h3>Edit Flashcard</h3>
-        <div className="form-group">
-          <label>Question</label>
-          <textarea
-            value={currentCard.question}
-            onChange={(e) =>
-              setCurrentCards((prev) =>
-                prev.map((c, i) =>
-                  i === currentIndex ? { ...c, question: e.target.value } : c
-                )
-              )
-            }
-          />
-        </div>
-        <div className="form-group">
-          <label>Answer</label>
-          <textarea
-            value={currentCard.answer}
-            onChange={(e) =>
-              setCurrentCards((prev) =>
-                prev.map((c, i) =>
-                  i === currentIndex ? { ...c, answer: e.target.value } : c
-                )
-              )
-            }
-          />
-        </div>
-        <div className="form-group">
-          <label>Category</label>
-          <input
-            type="text"
-            value={currentCard.category}
-            onChange={(e) =>
-              setCurrentCards((prev) =>
-                prev.map((c, i) =>
-                  i === currentIndex ? { ...c, category: e.target.value } : c
-                )
-              )
-            }
-          />
-        </div>
-        <div className="form-group">
-          <label>Folder</label>
-          <select
-            value={currentCard.folder || 'general'}
-            onChange={(e) =>
-              setCurrentCards((prev) =>
-                prev.map((c, i) =>
-                  i === currentIndex ? { ...c, folder: e.target.value } : c
-                )
-              )
-            }
-            className="folder-select"
+
+        {/* Bottom Navigation Buttons */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: "16px",
+            alignItems: "center",
+          }}
+        >
+          <button
+            onClick={handlePrevious}
+            disabled={currentIndex === 0}
+            className="nav-btn"
+            title="Previous card"
+            style={{ opacity: currentIndex === 0 ? 0.3 : 1 }}
           >
-            {folders.map(folder => (
-              <option key={folder.id} value={folder.id}>
-                {folder.icon} {folder.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="modal-actions">
-          <button 
-            className="btn btn-secondary" 
-            onClick={() => setShowEditor(false)}
-          >
-            Cancel
+            <ChevronLeft size={16} />
           </button>
-          <button 
-            className="btn btn-primary" 
-            onClick={() => {
-              // Save changes to the main flashcards array
-              updateFlashcard(currentCard.id, {
-                question: currentCard.question,
-                answer: currentCard.answer,
-                category: currentCard.category,
-                folder: currentCard.folder,
-              });
-              setShowEditor(false);
+
+          <span
+            style={{
+              fontSize: "0.9rem",
+              color: "var(--text-secondary)",
+              minWidth: "60px",
+              textAlign: "center",
             }}
           >
-            Save & Close
+            {currentIndex + 1} / {currentCards.length}
+          </span>
+
+          <button
+            onClick={handleNext}
+            disabled={currentIndex === currentCards.length - 1}
+            className="nav-btn"
+            title="Next card"
+            style={{
+              opacity: currentIndex === currentCards.length - 1 ? 0.3 : 1,
+            }}
+          >
+            <ChevronRight size={16} />
           </button>
         </div>
       </div>
-    </div>
-  )}
-
-      <div className="study-navigation">
-        <button
-          onClick={handlePrevious}
-          disabled={currentIndex === 0}
-          className="btn btn-secondary"
-        >
-          <ChevronLeft size={16} />
-          Previous
-        </button>
-        
-        <span className="card-counter">
-          {currentIndex + 1} / {currentCards.length}
-        </span>
-        
-        <button
-          onClick={handleNext}
-          disabled={currentIndex === currentCards.length - 1}
-          className="btn btn-secondary"
-        >
-          Next
-          <ChevronRight size={16} />
-        </button>
-      </div>
+      {showEditor && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Edit Flashcard</h3>
+            <div className="form-group">
+              <label>Question</label>
+              <textarea
+                value={currentCard.question}
+                onChange={(e) =>
+                  setCurrentCards((prev) =>
+                    prev.map((c, i) =>
+                      i === currentIndex
+                        ? { ...c, question: e.target.value }
+                        : c
+                    )
+                  )
+                }
+              />
+            </div>
+            <div className="form-group">
+              <label>Answer</label>
+              <textarea
+                value={currentCard.answer}
+                onChange={(e) =>
+                  setCurrentCards((prev) =>
+                    prev.map((c, i) =>
+                      i === currentIndex ? { ...c, answer: e.target.value } : c
+                    )
+                  )
+                }
+              />
+            </div>
+            <div className="form-group">
+              <label>Category</label>
+              <input
+                type="text"
+                value={currentCard.category}
+                onChange={(e) =>
+                  setCurrentCards((prev) =>
+                    prev.map((c, i) =>
+                      i === currentIndex
+                        ? { ...c, category: e.target.value }
+                        : c
+                    )
+                  )
+                }
+              />
+            </div>
+            <div className="form-group">
+              <label>Folder</label>
+              <select
+                value={currentCard.folder || "general"}
+                onChange={(e) =>
+                  setCurrentCards((prev) =>
+                    prev.map((c, i) =>
+                      i === currentIndex ? { ...c, folder: e.target.value } : c
+                    )
+                  )
+                }
+                className="folder-select"
+              >
+                {folders.map((folder) => (
+                  <option key={folder.id} value={folder.id}>
+                    {folder.icon} {folder.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="modal-actions">
+              <button
+                className="btn btn-secondary"
+                onClick={() => setShowEditor(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  // Save changes to the main flashcards array
+                  updateFlashcard(currentCard.id, {
+                    question: currentCard.question,
+                    answer: currentCard.answer,
+                    category: currentCard.category,
+                    folder: currentCard.folder,
+                  });
+                  setShowEditor(false);
+                }}
+              >
+                Save & Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {isFlipped && (
         <div className="study-actions">
           <button
-            onClick={() => handleDifficultyMark('easy')}
+            onClick={() => handleDifficultyMark("easy")}
             className="btn btn-success"
           >
             <CheckCircle size={16} />
             Easy
           </button>
           <button
-            onClick={() => handleDifficultyMark('medium')}
+            onClick={() => handleDifficultyMark("medium")}
             className="btn btn-warning"
           >
             <RotateCcw size={16} />
             Medium
           </button>
           <button
-            onClick={() => handleDifficultyMark('hard')}
+            onClick={() => handleDifficultyMark("hard")}
             className="btn btn-danger"
           >
             <AlertCircle size={16} />

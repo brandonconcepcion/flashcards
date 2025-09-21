@@ -1,0 +1,266 @@
+/* Jupyter-Style Markdown Styles */
+
+/* Base markdown container */
+.markdown-content {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  line-height: 1.8;
+  color: #333;
+}
+
+/* Headers */
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #1f2937;
+}
+
+.markdown-content h1 {
+  font-size: 1.8rem;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 0.3em;
+}
+
+.markdown-content h2 {
+  font-size: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 0.3em;
+}
+
+.markdown-content h3 {
+  font-size: 1.3rem;
+}
+
+.markdown-content h4 {
+  font-size: 1.1rem;
+}
+
+/* Paragraphs and spacing */
+.markdown-content p {
+  margin-bottom: 1em;
+  line-height: 1.8;
+}
+
+.markdown-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* Lists */
+.markdown-content ul,
+.markdown-content ol {
+  margin-bottom: 1em;
+  padding-left: 2em;
+}
+
+.markdown-content li {
+  margin-bottom: 0.5em;
+  line-height: 1.6;
+}
+
+.markdown-content li > ul,
+.markdown-content li > ol {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+/* Code blocks */
+.markdown-content pre {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 16px;
+  margin: 1em 0;
+  overflow-x: auto;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.markdown-content code {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.9em;
+  color: #dc2626;
+}
+
+.markdown-content pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+}
+
+/* Blockquotes */
+.markdown-content blockquote {
+  border-left: 4px solid #667eea;
+  margin: 1em 0;
+  padding-left: 1em;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* Tables */
+.markdown-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+  font-size: 0.9rem;
+}
+
+.markdown-content th,
+.markdown-content td {
+  border: 1px solid #e5e7eb;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.markdown-content th {
+  background: #f8fafc;
+  font-weight: 600;
+  color: #374151;
+}
+
+.markdown-content tr:nth-child(even) {
+  background: #f9fafb;
+}
+
+/* Links */
+.markdown-content a {
+  color: #667eea;
+  text-decoration: none;
+}
+
+.markdown-content a:hover {
+  text-decoration: underline;
+}
+
+/* Emphasis */
+.markdown-content strong {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.markdown-content em {
+  font-style: italic;
+  color: #6b7280;
+}
+
+/* Horizontal rules */
+.markdown-content hr {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 2em 0;
+}
+
+/* Math/LaTeX styling */
+.markdown-content .math {
+  font-family: 'KaTeX_Main', 'Times New Roman', serif;
+  font-size: 1.1em;
+}
+
+.markdown-content .math-display {
+  text-align: center;
+  margin: 1em 0;
+}
+
+/* Jupyter-specific styles */
+.markdown-content .cell {
+  margin-bottom: 1.5em;
+}
+
+.markdown-content .input_area {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 12px;
+  margin: 1em 0;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.markdown-content .output_area {
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 6px;
+  padding: 12px;
+  margin: 1em 0;
+}
+
+/* Flashcard-specific markdown adjustments */
+.flashcard-front .markdown-content,
+.flashcard-back .markdown-content {
+  font-size: 1.1rem;
+  line-height: 1.8;
+}
+
+.flashcard-front .markdown-content h1,
+.flashcard-front .markdown-content h2,
+.flashcard-front .markdown-content h3 {
+  margin-top: 0.5em;
+  margin-bottom: 0.3em;
+}
+
+.flashcard-front .markdown-content h1 {
+  font-size: 1.5rem;
+}
+
+.flashcard-front .markdown-content h2 {
+  font-size: 1.3rem;
+}
+
+.flashcard-front .markdown-content h3 {
+  font-size: 1.1rem;
+}
+
+.flashcard-back .markdown-content {
+  font-size: 1rem;
+}
+
+.flashcard-back .markdown-content h1,
+.flashcard-back .markdown-content h2,
+.flashcard-back .markdown-content h3 {
+  margin-top: 0.5em;
+  margin-bottom: 0.3em;
+}
+
+.flashcard-back .markdown-content h1 {
+  font-size: 1.3rem;
+}
+
+.flashcard-back .markdown-content h2 {
+  font-size: 1.1rem;
+}
+
+.flashcard-back .markdown-content h3 {
+  font-size: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .markdown-content {
+    font-size: 0.95rem;
+  }
+  
+  .markdown-content pre {
+    padding: 12px;
+    font-size: 0.8rem;
+  }
+  
+  .markdown-content table {
+    font-size: 0.8rem;
+  }
+  
+  .markdown-content th,
+  .markdown-content td {
+    padding: 6px 8px;
+  }
+}
+

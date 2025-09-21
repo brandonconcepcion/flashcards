@@ -1,6 +1,6 @@
-# Study Flashcards - AI-Enhanced Interview Preparation Tool
+# Study Flashcards - Modern Learning Tool
 
-A modern, TypeScript-based flashcard application built with React and Vite, featuring AI-powered content analysis and flashcard generation.
+A modern, TypeScript-based flashcard application built with React and Vite, featuring LaTeX math support and organized study management.
 
 ## Features
 
@@ -12,12 +12,12 @@ A modern, TypeScript-based flashcard application built with React and Vite, feat
 - **Local Storage**: All data is stored locally in your browser
 - **Responsive Design**: Works on desktop and mobile devices
 
-### AI-Enhanced Features 🤖
+### Enhanced Features ✨
 
-- **Text Summarization**: Generate concise summaries of your answers
-- **Concept Extraction**: Automatically identify key concepts from your content
-- **Smart Flashcard Generation**: Create additional flashcards based on extracted concepts
-- **Technical Term Recognition**: Built-in recognition of common technical terms (ML, data science, programming, etc.)
+- **Folder Organization**: Organize your flashcards into custom study folders
+- **Category System**: Tag flashcards with categories for better organization
+- **Study Progress Tracking**: Track your learning progress and difficulty ratings
+- **Import/Export**: Backup and share your flashcard collections
 
 ### LaTeX Math Support 📐
 
@@ -56,15 +56,13 @@ A modern, TypeScript-based flashcard application built with React and Vite, feat
 
 4. Open your browser and go to `http://localhost:5173`
 
-## Using AI Features
+## Using LaTeX Math
 
-### Option 1: With OpenAI API Key (Full AI Features)
+### Writing Mathematical Formulas
 
-1. Click "Enable AI Features" in the Add Cards tab
-2. Enter your OpenAI API key
-3. Enjoy full AI-powered summaries and concept extraction
-
-### Option 2: Without API Key (Mock AI Features)
+1. Use `$...$` for inline math: `$E = mc^2$`
+2. Use `$$...$$` for block equations: `$$\int_0^1 x^2 dx$$`
+3. Preview your formulas in real-time while creating flashcards
 
 - The app includes intelligent mock AI that can:
   - Extract technical terms from your text

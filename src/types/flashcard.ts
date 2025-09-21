@@ -26,4 +26,4 @@ export interface StudySession {
   showAnswer: boolean;
 }
 
-export type TabType = 'add' | 'study' | 'manage' | 'folders';
+export type TabType = 'add' | 'study' | 'manage' | 'folders' | 'resume-griller' | 'settings';

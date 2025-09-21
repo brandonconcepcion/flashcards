@@ -1,0 +1,200 @@
+/* Theme Variables */
+
+/* Light Theme (Default) */
+:root,
+.light {
+  /* Primary Colors */
+  --primary-color: #667eea;
+  --primary-hover: #5a67d8;
+  --primary-light: #c7d2fe;
+  --primary-bg: #f0f9ff;
+  
+  /* Background Colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --bg-accent: #e2e8f0;
+  
+  /* Text Colors */
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-tertiary: #64748b;
+  --text-muted: #94a3b8;
+  --text-inverse: #ffffff;
+  
+  /* Border Colors */
+  --border-primary: #e2e8f0;
+  --border-secondary: #cbd5e1;
+  --border-accent: #94a3b8;
+  
+  /* Status Colors */
+  --success-color: #22c55e;
+  --success-bg: #f0fdf4;
+  --warning-color: #f59e0b;
+  --warning-bg: #fffbeb;
+  --error-color: #ef4444;
+  --error-bg: #fef2f2;
+  --info-color: #3b82f6;
+  --info-bg: #eff6ff;
+  
+  /* Shadow */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  
+  /* Header Gradient */
+  --header-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  
+  /* Card Colors */
+  --card-bg: #ffffff;
+  --card-border: #e2e8f0;
+  --card-hover-border: #c7d2fe;
+  
+  /* Input Colors */
+  --input-bg: #ffffff;
+  --input-border: #d1d5db;
+  --input-focus: #667eea;
+  --input-placeholder: #9ca3af;
+}
+
+/* Dark Theme */
+.dark {
+  /* Primary Colors */
+  --primary-color: #818cf8;
+  --primary-hover: #6366f1;
+  --primary-light: #4338ca;
+  --primary-bg: #312e81;
+  
+  /* Background Colors */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --bg-accent: #475569;
+  
+  /* Text Colors */
+  --text-primary: #f8fafc;
+  --text-secondary: #e2e8f0;
+  --text-tertiary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-inverse: #0f172a;
+  
+  /* Border Colors */
+  --border-primary: #334155;
+  --border-secondary: #475569;
+  --border-accent: #64748b;
+  
+  /* Status Colors */
+  --success-color: #34d399;
+  --success-bg: #064e3b;
+  --warning-color: #fbbf24;
+  --warning-bg: #451a03;
+  --error-color: #f87171;
+  --error-bg: #7f1d1d;
+  --info-color: #60a5fa;
+  --info-bg: #1e3a8a;
+  
+  /* Shadow (adjusted for dark theme) */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.3);
+  
+  /* Header Gradient */
+  --header-gradient: linear-gradient(135deg, #4338ca 0%, #6366f1 100%);
+  
+  /* Card Colors */
+  --card-bg: #1e293b;
+  --card-border: #334155;
+  --card-hover-border: #4338ca;
+  
+  /* Input Colors */
+  --input-bg: #334155;
+  --input-border: #475569;
+  --input-focus: #818cf8;
+  --input-placeholder: #64748b;
+}
+
+/* Theme Transition */
+* {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+/* Disable transitions during theme switch to prevent flash */
+.theme-switching * {
+  transition: none !important;
+}
+
+/* Theme Toggle Styles */
+.theme-controls {
+  padding: 20px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--border-primary);
+}
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.theme-label {
+  font-weight: 500;
+  color: var(--text-primary);
+  min-width: 60px;
+}
+
+.toggle-btn {
+  position: relative;
+  width: 60px;
+  height: 32px;
+  background: var(--bg-accent);
+  border: 1px solid var(--border-secondary);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+}
+
+.toggle-btn.dark {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.toggle-slider {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  background: var(--bg-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  color: var(--text-secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.toggle-btn.dark .toggle-slider {
+  transform: translateX(28px);
+  color: var(--primary-color);
+  background: var(--bg-primary);
+}
+
+.theme-name {
+  font-weight: 500;
+  color: var(--text-primary);
+  min-width: 60px;
+  text-transform: capitalize;
+}
+
+.theme-description {
+  color: var(--text-tertiary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+}
