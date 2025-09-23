@@ -3,7 +3,6 @@ import {
   BookOpen,
   Plus,
   Settings,
-  Folder,
   Cog,
   Play,
   Pause,
