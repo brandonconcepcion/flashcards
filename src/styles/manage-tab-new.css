@@ -363,11 +363,15 @@
 .card-list-content {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px; /* Reduced from 16px to accommodate checkbox */
   padding: 12px 16px;
   min-height: 60px;
   cursor: pointer;
   transition: background-color 0.2s ease;
+}
+
+.card-list-content:not(:has(.card-checkbox)) {
+  gap: 16px; /* Restore original gap when no checkbox */
 }
 
 .card-list-content:hover {
@@ -932,3 +936,128 @@
   border-color: #4285f4;
   color: white;
 }
+
+/* Bulk Delete Button */
+.header-top .action-btn.delete {
+  background: var(--card-bg);
+  border: 1px solid #ef4444;
+  color: #ef4444;
+}
+
+.header-top .action-btn.delete:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: white;
+}
+
+/* Selection Mode Button */
+.header-top .action-btn.selection-mode {
+  background: var(--card-bg);
+  border: 1px solid var(--primary-color);
+  color: var(--primary-color);
+}
+
+.header-top .action-btn.selection-mode:hover {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+.header-top .action-btn.selection-mode-active {
+  background: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  color: white;
+}
+
+.header-top .action-btn.selection-mode-active:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+}
+
+/* Selection Mode Button in Sort Controls */
+.selection-mode-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.selection-mode-btn.selection-mode {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.selection-mode-btn.selection-mode:hover {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+.selection-mode-btn.selection-mode-active {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+.selection-mode-btn.selection-mode-active:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+}
+
+/* Selection Controls */
+.selection-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.selection-btn {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.selection-btn:hover:not(:disabled) {
+  background: var(--bg-tertiary);
+  border-color: var(--primary-color);
+}
+
+.selection-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.selection-count {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Card Checkbox */
+.card-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+}
+
+.card-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+}
+

@@ -67,7 +67,11 @@ const ManageTab: React.FC<ManageTabProps> = ({
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showGoogleDocsModal, setShowGoogleDocsModal] = useState(false);
-  const [selectedCards] = useState<Set<string>>(new Set());
+  const [selectedCards, setSelectedCards] = useState<Set<string>>(new Set());
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(
+    null
+  );
 
   const categories = getCategories();
 
@@ -165,6 +169,78 @@ const ManageTab: React.FC<ManageTabProps> = ({
     }
   };
 
+  const toggleCardSelection = (
+    cardId: string,
+    cardIndex: number,
+    isShiftClick: boolean = false
+  ) => {
+    setSelectedCards((prev) => {
+      const newSet = new Set(prev);
+
+      if (isShiftClick && lastSelectedIndex !== null) {
+        // Handle shift+click range selection - select all cards in range
+        const startIndex = Math.min(lastSelectedIndex, cardIndex);
+        const endIndex = Math.max(lastSelectedIndex, cardIndex);
+
+        for (let i = startIndex; i <= endIndex; i++) {
+          if (displayCards[i]) {
+            newSet.add(displayCards[i].id);
+          }
+        }
+      } else {
+        // Handle normal click - toggle selection
+        if (newSet.has(cardId)) {
+          newSet.delete(cardId);
+        } else {
+          newSet.add(cardId);
+        }
+      }
+
+      return newSet;
+    });
+
+    // Always update lastSelectedIndex when a card is clicked
+    setLastSelectedIndex(cardIndex);
+  };
+
+  const selectAllCards = () => {
+    const allCardIds = displayCards.map((card) => card.id);
+    setSelectedCards(new Set(allCardIds));
+    // Set lastSelectedIndex to the last card for shift+click functionality
+    if (displayCards.length > 0) {
+      setLastSelectedIndex(displayCards.length - 1);
+    }
+  };
+
+  const deselectAllCards = () => {
+    setSelectedCards(new Set());
+  };
+
+  const toggleSelectionMode = () => {
+    setSelectionMode(!selectionMode);
+    if (selectionMode) {
+      // Exiting selection mode - clear selections
+      setSelectedCards(new Set());
+      setLastSelectedIndex(null);
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedCards.size === 0) return;
+
+    const confirmMessage =
+      selectedCards.size === 1
+        ? "Are you sure you want to delete this flashcard?"
+        : `Are you sure you want to delete ${selectedCards.size} flashcards?`;
+
+    if (window.confirm(confirmMessage)) {
+      selectedCards.forEach((cardId) => {
+        deleteFlashcard(cardId);
+      });
+      setSelectedCards(new Set());
+    }
+  };
+
   const handleExport = () => {
     const dataStr = JSON.stringify(flashcards, null, 2);
     const dataUri =
@@ -254,6 +330,18 @@ const ManageTab: React.FC<ManageTabProps> = ({
               <Upload size={20} />
               <span>Import</span>
             </button>
+            {selectedCards.size > 0 && (
+              <button
+                onClick={handleBulkDelete}
+                className="action-btn delete"
+                title={`Delete ${selectedCards.size} selected card${
+                  selectedCards.size === 1 ? "" : "s"
+                }`}
+              >
+                <Trash2 size={20} />
+                <span>Delete ({selectedCards.size})</span>
+              </button>
+            )}
             <input
               ref={fileInputRef}
               type="file"
@@ -342,6 +430,29 @@ const ManageTab: React.FC<ManageTabProps> = ({
                 Clear Filters
               </button>
             )}
+            {selectionMode && (
+              <div className="selection-controls">
+                <button
+                  onClick={selectAllCards}
+                  className="selection-btn"
+                  disabled={displayCards.length === 0}
+                >
+                  Select All
+                </button>
+                <button
+                  onClick={deselectAllCards}
+                  className="selection-btn"
+                  disabled={selectedCards.size === 0}
+                >
+                  Deselect All
+                </button>
+                {selectedCards.size > 0 && (
+                  <span className="selection-count">
+                    {selectedCards.size} selected
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -349,6 +460,18 @@ const ManageTab: React.FC<ManageTabProps> = ({
           <div className="view-toggle"></div>
 
           <div className="sort-controls">
+            <button
+              onClick={toggleSelectionMode}
+              className={`selection-mode-btn ${
+                selectionMode ? "selection-mode-active" : "selection-mode"
+              }`}
+              title={
+                selectionMode ? "Exit Selection Mode" : "Enter Selection Mode"
+              }
+            >
+              <BookOpen size={16} />
+              <span>{selectionMode ? "Exit Select" : "Select"}</span>
+            </button>
             <select
               value={sortField}
               onChange={(e) =>
@@ -458,8 +581,20 @@ const ManageTab: React.FC<ManageTabProps> = ({
                   <>
                     <div
                       className="card-list-content"
-                      onClick={() => handleCardClick(card.id)}
+                      onClick={() => !selectionMode && handleCardClick(card.id)}
                     >
+                      {selectionMode && (
+                        <div className="card-checkbox">
+                          <input
+                            type="checkbox"
+                            checked={selectedCards.has(card.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleCardSelection(card.id, index, e.shiftKey);
+                            }}
+                          />
+                        </div>
+                      )}
                       <div className="card-number">{index + 1}</div>
                       <div className="card-question">
                         <MarkdownText>{card.question}</MarkdownText>
