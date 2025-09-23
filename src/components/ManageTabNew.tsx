@@ -10,6 +10,7 @@ import {
   SortAsc,
   SortDesc,
   FileText,
+  Image,
 } from "lucide-react";
 import type { Flashcard, StudyFolder } from "../types/flashcard";
 import MarkdownText from "./MarkdownText";
@@ -39,6 +40,7 @@ interface ManageTabProps {
   getCategories: () => string[];
   getCardsByFolder: (folderId: string) => Flashcard[];
   importFlashcards: (flashcards: Flashcard[]) => void;
+  updateFolder: (id: string, updates: Partial<StudyFolder>) => void;
   persistentState: {
     state: PersistentState;
     updateState: (updates: Partial<PersistentState>) => void;
@@ -55,6 +57,7 @@ const ManageTab: React.FC<ManageTabProps> = ({
   getCategories,
   getCardsByFolder,
   importFlashcards,
+  updateFolder,
   persistentState,
 }) => {
   const [editingCard, setEditingCard] = useState<string | null>(null);
@@ -66,12 +69,22 @@ const ManageTab: React.FC<ManageTabProps> = ({
     folder: "",
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const iconFileInputRef = useRef<HTMLInputElement>(null);
   const [showGoogleDocsModal, setShowGoogleDocsModal] = useState(false);
   const [selectedCards, setSelectedCards] = useState<Set<string>>(new Set());
   const [selectionMode, setSelectionMode] = useState(false);
   const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(
     null
   );
+  const [showFolderEdit, setShowFolderEdit] = useState(false);
+  const [folderEditForm, setFolderEditForm] = useState({
+    name: "",
+    description: "",
+    color: "#667eea",
+    icon: "📚",
+  });
+  const [customEmoji, setCustomEmoji] = useState("");
+  const [iconImage, setIconImage] = useState<string | null>(null);
 
   const categories = getCategories();
 
@@ -241,6 +254,70 @@ const ManageTab: React.FC<ManageTabProps> = ({
     }
   };
 
+  const handleFolderEdit = () => {
+    const currentFolderData = folders.find((f) => f.id === selectedFolder);
+    if (currentFolderData) {
+      setFolderEditForm({
+        name: currentFolderData.name,
+        description: currentFolderData.description,
+        color: currentFolderData.color,
+        icon: currentFolderData.icon,
+      });
+      // Check if current icon is a custom emoji or image
+      const isCustomEmoji =
+        currentFolderData.icon && !currentFolderData.icon.startsWith("data:");
+      const isImage =
+        currentFolderData.icon && currentFolderData.icon.startsWith("data:");
+
+      if (isCustomEmoji) {
+        setCustomEmoji(currentFolderData.icon);
+        setIconImage(null);
+      } else if (isImage) {
+        setIconImage(currentFolderData.icon);
+        setCustomEmoji("");
+      } else {
+        setCustomEmoji("");
+        setIconImage(null);
+      }
+      setShowFolderEdit(true);
+    }
+  };
+
+  const handleFolderSave = () => {
+    if (folderEditForm.name.trim()) {
+      const iconToUse = customEmoji.trim() || iconImage || "📁";
+      updateFolder(selectedFolder, { ...folderEditForm, icon: iconToUse });
+      setShowFolderEdit(false);
+      setCustomEmoji("");
+      setIconImage(null);
+    }
+  };
+
+  const handleFolderCancel = () => {
+    setShowFolderEdit(false);
+    setFolderEditForm({
+      name: "",
+      description: "",
+      color: "#667eea",
+      icon: "📚",
+    });
+    setCustomEmoji("");
+    setIconImage(null);
+  };
+
+  const handleIconImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        setIconImage(result);
+        setCustomEmoji(""); // Clear custom emoji when image is selected
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleExport = () => {
     const dataStr = JSON.stringify(flashcards, null, 2);
     const dataUri =
@@ -353,6 +430,203 @@ const ManageTab: React.FC<ManageTabProps> = ({
         </div>
       </div>
 
+      {/* Folder Management Section */}
+      <div className="folder-management-section">
+        <div className="folder-selector">
+          <label>Current Project:</label>
+          <div className="folder-select-display">
+            {(() => {
+              const currentFolderData = folders.find(
+                (f) => f.id === selectedFolder
+              );
+              if (!currentFolderData) return null;
+
+              const isImage =
+                currentFolderData.icon &&
+                currentFolderData.icon.startsWith("data:");
+
+              return (
+                <div
+                  className="folder-icon-display"
+                  style={{ backgroundColor: currentFolderData.color }}
+                >
+                  {isImage ? (
+                    <img
+                      src={currentFolderData.icon}
+                      alt={currentFolderData.name}
+                      className="folder-icon-image"
+                    />
+                  ) : (
+                    <span className="folder-icon-emoji">
+                      {currentFolderData.icon}
+                    </span>
+                  )}
+                </div>
+              );
+            })()}
+            <span className="folder-name">
+              {folders.find((f) => f.id === selectedFolder)?.name}
+            </span>
+          </div>
+          <button
+            onClick={handleFolderEdit}
+            className="btn btn-secondary btn-sm"
+            title="Edit folder properties"
+          >
+            <Edit2 size={16} />
+            Edit Folder
+          </button>
+        </div>
+      </div>
+
+      {/* Folder Edit Form */}
+      {showFolderEdit && (
+        <div className="folder-edit-form">
+          <h3>Edit Folder Properties</h3>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleFolderSave();
+            }}
+          >
+            <div className="form-row">
+              <div className="form-group">
+                <label>Folder Name</label>
+                <input
+                  type="text"
+                  value={folderEditForm.name}
+                  onChange={(e) =>
+                    setFolderEditForm({
+                      ...folderEditForm,
+                      name: e.target.value,
+                    })
+                  }
+                  placeholder="Folder name"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Description</label>
+                <input
+                  type="text"
+                  value={folderEditForm.description}
+                  onChange={(e) =>
+                    setFolderEditForm({
+                      ...folderEditForm,
+                      description: e.target.value,
+                    })
+                  }
+                  placeholder="Folder description"
+                />
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label>Color</label>
+                <div className="color-picker">
+                  {[
+                    "#667eea",
+                    "#dab16bff",
+                    "#66b884ff",
+                    "#ef4444",
+                    "#7765a2ff",
+                    "#06b6d4",
+                    "#f97316",
+                    "#ec4899",
+                    "#84cc16",
+                    "#8a8bccff",
+                  ].map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      className={`color-option ${
+                        folderEditForm.color === color ? "selected" : ""
+                      }`}
+                      style={{ backgroundColor: color }}
+                      onClick={() =>
+                        setFolderEditForm({ ...folderEditForm, color })
+                      }
+                    />
+                  ))}
+                </div>
+              </div>
+              <div className="form-group">
+                <label>Icon</label>
+
+                {/* Custom Emoji Input */}
+                <div className="custom-emoji-section">
+                  <div className="custom-emoji-input">
+                    <input
+                      type="text"
+                      value={customEmoji}
+                      onChange={(e) => {
+                        setCustomEmoji(e.target.value);
+                        setIconImage(null); // Clear image when emoji is typed
+                      }}
+                      placeholder="Type any emoji (e.g., 🎯, 🚀, 💡)"
+                      maxLength={2}
+                    />
+                    <span className="emoji-preview">{customEmoji || "😊"}</span>
+                  </div>
+                  <small>Enter any emoji to use as your folder icon</small>
+                </div>
+
+                {/* Photo Upload */}
+                <div className="photo-upload-section">
+                  <label>Upload Photo</label>
+                  <div className="photo-upload-area">
+                    <input
+                      ref={iconFileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleIconImageUpload}
+                      style={{ display: "none" }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => iconFileInputRef.current?.click()}
+                      className="upload-photo-btn"
+                    >
+                      <Image size={20} />
+                      <span>Choose Photo</span>
+                    </button>
+                    {iconImage && (
+                      <div className="image-preview">
+                        <img src={iconImage} alt="Icon preview" />
+                        <button
+                          type="button"
+                          onClick={() => setIconImage(null)}
+                          className="remove-image-btn"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  <small>
+                    Upload a square photo to use as your folder icon
+                  </small>
+                </div>
+              </div>
+            </div>
+
+            <div className="form-actions">
+              <button type="submit" className="btn btn-primary">
+                Save Changes
+              </button>
+              <button
+                type="button"
+                onClick={handleFolderCancel}
+                className="btn btn-secondary"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
       {/* Controls Section */}
       <div className="controls-section">
         <div className="search-filter-row">
@@ -381,23 +655,6 @@ const ManageTab: React.FC<ManageTabProps> = ({
           </div>
 
           <div className="filters">
-            <select
-              value={selectedFolder}
-              onChange={(e) =>
-                persistentState.updateState({
-                  manageSelectedFolder: e.target.value,
-                })
-              }
-              className="filter-select"
-            >
-              <option value="all">All Folders</option>
-              {folders.map((folder) => (
-                <option key={folder.id} value={folder.id}>
-                  {folder.icon} {folder.name}
-                </option>
-              ))}
-            </select>
-
             <select
               value={selectedCategory}
               onChange={(e) =>

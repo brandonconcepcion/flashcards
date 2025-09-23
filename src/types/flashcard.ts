@@ -20,4 +20,4 @@ export interface StudyFolder {
 }
 
 
-export type TabType = 'add' | 'study' | 'manage' | 'folders' | 'resume-griller' | 'settings';
+export type TabType = 'add' | 'study' | 'manage' | 'resume-griller' | 'settings';

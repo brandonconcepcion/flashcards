@@ -16,7 +16,6 @@ import { useHeaderFeatures } from "./hooks/useHeaderFeatures";
 import AddTab from "./components/AddTab";
 import StudyTab from "./components/StudyTab";
 import ManageTab from "./components/ManageTabNew";
-import FoldersTab from "./components/FoldersTab";
 import ResumeGrillerTab from "./components/ResumeGrillerTab";
 import AnimatedCounter from "./components/AnimatedCounter";
 // PhotoUploadModal removed
@@ -38,7 +37,6 @@ function App() {
     { id: "add" as TabType, label: "Add Cards", icon: Plus },
     { id: "manage" as TabType, label: "Manage Cards", icon: Settings },
     { id: "settings" as TabType, label: "Settings", icon: Cog },
-    { id: "folders" as TabType, label: "Study Folders", icon: Folder },
   ];
 
   return (
@@ -230,7 +228,6 @@ function App() {
         </nav>
 
         <main className="main-content">
-          {activeTab === "folders" && <FoldersTab {...flashcardHook} />}
           {activeTab === "add" && (
             <AddTab {...flashcardHook} persistentState={persistentState} />
           )}
