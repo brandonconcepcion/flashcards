@@ -11,6 +11,7 @@ import {
   SortDesc,
   FileText,
   Image,
+  Plus,
 } from "lucide-react";
 import type { Flashcard, StudyFolder } from "../types/flashcard";
 import MarkdownText from "./MarkdownText";
@@ -41,6 +42,12 @@ interface ManageTabProps {
   getCardsByFolder: (folderId: string) => Flashcard[];
   importFlashcards: (flashcards: Flashcard[]) => void;
   updateFolder: (id: string, updates: Partial<StudyFolder>) => void;
+  addFolder: (
+    name: string,
+    description: string,
+    color: string,
+    icon: string
+  ) => StudyFolder;
   persistentState: {
     state: PersistentState;
     updateState: (updates: Partial<PersistentState>) => void;
@@ -58,6 +65,7 @@ const ManageTab: React.FC<ManageTabProps> = ({
   getCardsByFolder,
   importFlashcards,
   updateFolder,
+  addFolder,
   persistentState,
 }) => {
   const [editingCard, setEditingCard] = useState<string | null>(null);
@@ -70,6 +78,7 @@ const ManageTab: React.FC<ManageTabProps> = ({
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const iconFileInputRef = useRef<HTMLInputElement>(null);
+  const createIconFileInputRef = useRef<HTMLInputElement>(null);
   const [showGoogleDocsModal, setShowGoogleDocsModal] = useState(false);
   const [selectedCards, setSelectedCards] = useState<Set<string>>(new Set());
   const [selectionMode, setSelectionMode] = useState(false);
@@ -77,14 +86,23 @@ const ManageTab: React.FC<ManageTabProps> = ({
     null
   );
   const [showFolderEdit, setShowFolderEdit] = useState(false);
+  const [showCreateFolder, setShowCreateFolder] = useState(false);
   const [folderEditForm, setFolderEditForm] = useState({
     name: "",
     description: "",
     color: "#667eea",
     icon: "📚",
   });
+  const [createFolderForm, setCreateFolderForm] = useState({
+    name: "",
+    description: "",
+    color: "#667eea",
+    icon: "📚",
+  });
   const [customEmoji, setCustomEmoji] = useState("");
+  const [createCustomEmoji, setCreateCustomEmoji] = useState("");
   const [iconImage, setIconImage] = useState<string | null>(null);
+  const [createIconImage, setCreateIconImage] = useState<string | null>(null);
 
   const categories = getCategories();
 
@@ -305,6 +323,58 @@ const ManageTab: React.FC<ManageTabProps> = ({
     setIconImage(null);
   };
 
+  const handleCreateFolder = () => {
+    setCreateFolderForm({
+      name: "",
+      description: "",
+      color: "#667eea",
+      icon: "📚",
+    });
+    setCreateCustomEmoji("");
+    setCreateIconImage(null);
+    setShowCreateFolder(true);
+  };
+
+  const handleCreateFolderSave = () => {
+    if (createFolderForm.name.trim()) {
+      const iconToUse = createCustomEmoji.trim() || createIconImage || "📁";
+      const newFolder = addFolder(
+        createFolderForm.name,
+        createFolderForm.description,
+        createFolderForm.color,
+        iconToUse
+      );
+      // Switch to the new folder
+      persistentState.updateState({ manageSelectedFolder: newFolder.id });
+      setShowCreateFolder(false);
+      setCreateCustomEmoji("");
+      setCreateIconImage(null);
+    }
+  };
+
+  const handleCreateFolderCancel = () => {
+    setShowCreateFolder(false);
+    setCreateCustomEmoji("");
+    setCreateIconImage(null);
+  };
+
+  const handleCreateIconImageUpload = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setCreateIconImage(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleFolderSwitch = (folderId: string) => {
+    persistentState.updateState({ manageSelectedFolder: folderId });
+  };
+
   const handleIconImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -434,48 +504,71 @@ const ManageTab: React.FC<ManageTabProps> = ({
       <div className="folder-management-section">
         <div className="folder-selector">
           <label>Current Project:</label>
-          <div className="folder-select-display">
-            {(() => {
-              const currentFolderData = folders.find(
-                (f) => f.id === selectedFolder
-              );
-              if (!currentFolderData) return null;
+          <div className="folder-switcher">
+            <select
+              value={selectedFolder}
+              onChange={(e) => handleFolderSwitch(e.target.value)}
+              className="folder-dropdown"
+            >
+              {folders.map((folder) => (
+                <option key={folder.id} value={folder.id}>
+                  {folder.name}
+                </option>
+              ))}
+            </select>
+            <div className="folder-display">
+              {(() => {
+                const currentFolderData = folders.find(
+                  (f) => f.id === selectedFolder
+                );
+                if (!currentFolderData) return null;
 
-              const isImage =
-                currentFolderData.icon &&
-                currentFolderData.icon.startsWith("data:");
+                const isImage =
+                  currentFolderData.icon &&
+                  currentFolderData.icon.startsWith("data:");
 
-              return (
-                <div
-                  className="folder-icon-display"
-                  style={{ backgroundColor: currentFolderData.color }}
-                >
-                  {isImage ? (
-                    <img
-                      src={currentFolderData.icon}
-                      alt={currentFolderData.name}
-                      className="folder-icon-image"
-                    />
-                  ) : (
-                    <span className="folder-icon-emoji">
-                      {currentFolderData.icon}
-                    </span>
-                  )}
-                </div>
-              );
-            })()}
-            <span className="folder-name">
-              {folders.find((f) => f.id === selectedFolder)?.name}
-            </span>
+                return (
+                  <div
+                    className="folder-icon-display"
+                    style={{ backgroundColor: currentFolderData.color }}
+                  >
+                    {isImage ? (
+                      <img
+                        src={currentFolderData.icon}
+                        alt={currentFolderData.name}
+                        className="folder-icon-image"
+                      />
+                    ) : (
+                      <span className="folder-icon-emoji">
+                        {currentFolderData.icon}
+                      </span>
+                    )}
+                  </div>
+                );
+              })()}
+              <span className="folder-name">
+                {folders.find((f) => f.id === selectedFolder)?.name}
+              </span>
+            </div>
           </div>
-          <button
-            onClick={handleFolderEdit}
-            className="btn btn-secondary btn-sm"
-            title="Edit folder properties"
-          >
-            <Edit2 size={16} />
-            Edit Folder
-          </button>
+          <div className="folder-actions">
+            <button
+              onClick={handleFolderEdit}
+              className="btn btn-secondary btn-sm"
+              title="Edit folder properties"
+            >
+              <Edit2 size={16} />
+              Edit
+            </button>
+            <button
+              onClick={handleCreateFolder}
+              className="btn btn-primary btn-sm"
+              title="Create new folder"
+            >
+              <Plus size={16} />
+              New Folder
+            </button>
+          </div>
         </div>
       </div>
 
@@ -618,6 +711,131 @@ const ManageTab: React.FC<ManageTabProps> = ({
               <button
                 type="button"
                 onClick={handleFolderCancel}
+                className="btn btn-secondary"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Create Folder Form */}
+      {showCreateFolder && (
+        <div className="folder-edit-form">
+          <h3>Create New Folder</h3>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleCreateFolderSave();
+            }}
+          >
+            <div className="form-row">
+              <div className="form-group">
+                <label>Folder Name</label>
+                <input
+                  type="text"
+                  value={createFolderForm.name}
+                  onChange={(e) =>
+                    setCreateFolderForm({
+                      ...createFolderForm,
+                      name: e.target.value,
+                    })
+                  }
+                  placeholder="Enter folder name"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Description</label>
+                <input
+                  type="text"
+                  value={createFolderForm.description}
+                  onChange={(e) =>
+                    setCreateFolderForm({
+                      ...createFolderForm,
+                      description: e.target.value,
+                    })
+                  }
+                  placeholder="Enter folder description"
+                />
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label>Background Color</label>
+                <input
+                  type="color"
+                  value={createFolderForm.color}
+                  onChange={(e) =>
+                    setCreateFolderForm({
+                      ...createFolderForm,
+                      color: e.target.value,
+                    })
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="custom-emoji-section">
+              <label>Custom Emoji</label>
+              <div className="emoji-input-group">
+                <input
+                  type="text"
+                  value={createCustomEmoji}
+                  onChange={(e) => setCreateCustomEmoji(e.target.value)}
+                  placeholder="Enter emoji (e.g., 🚀, 📚, 💡)"
+                  className="custom-emoji-input"
+                />
+                <div className="emoji-preview">
+                  {createCustomEmoji && (
+                    <span className="preview-emoji">{createCustomEmoji}</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="photo-upload-section">
+              <label>Upload Photo</label>
+              <div className="photo-upload-area">
+                <input
+                  ref={createIconFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleCreateIconImageUpload}
+                  style={{ display: "none" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => createIconFileInputRef.current?.click()}
+                  className="upload-photo-btn"
+                >
+                  <Image size={20} />
+                  Choose Photo
+                </button>
+                {createIconImage && (
+                  <div className="image-preview">
+                    <img src={createIconImage} alt="Preview" />
+                    <button
+                      type="button"
+                      onClick={() => setCreateIconImage(null)}
+                      className="remove-image-btn"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="form-actions">
+              <button type="submit" className="btn btn-primary">
+                Create Folder
+              </button>
+              <button
+                type="button"
+                onClick={handleCreateFolderCancel}
                 className="btn btn-secondary"
               >
                 Cancel

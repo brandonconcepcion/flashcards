@@ -99,88 +99,72 @@ const AddTab: React.FC<AddTabProps> = ({
           border: "1px solid var(--border-primary)",
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: "12px",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ fontSize: "1.2rem" }}>
-              {getFolderById(selectedFolder)?.icon}
-            </span>
-            <strong>Adding to: {getFolderById(selectedFolder)?.name}</strong>
-          </div>
-          <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "4px" }}
-            >
-              <label
-                style={{
-                  fontSize: "0.8rem",
-                  color: "var(--text-secondary)",
-                  fontWeight: "500",
-                }}
-              >
-                Folder:
-              </label>
+        <div className="folder-management-section">
+          <div className="folder-selector">
+            <label>Adding to:</label>
+            <div className="folder-switcher">
               <select
                 value={selectedFolder}
                 onChange={(e) => handleFolderChange(e.target.value)}
-                style={{
-                  padding: "6px 12px",
-                  border: "1px solid var(--border-primary)",
-                  borderRadius: "8px",
-                  background: "var(--card-bg)",
-                  color: "var(--text-primary)",
-                  fontSize: "0.9rem",
-                  minWidth: "150px",
-                }}
+                className="folder-dropdown"
               >
                 {folders.map((folder) => (
                   <option key={folder.id} value={folder.id}>
-                    {folder.icon} {folder.name}
+                    {folder.name}
                   </option>
                 ))}
               </select>
-            </div>
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "4px" }}
-            >
-              <label
-                style={{
-                  fontSize: "0.8rem",
-                  color: "var(--text-secondary)",
-                  fontWeight: "500",
-                }}
-              >
-                Category:
-              </label>
-              <input
-                type="text"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                placeholder="Optional category"
-                list="categories"
-                style={{
-                  padding: "6px 12px",
-                  border: "1px solid var(--border-primary)",
-                  borderRadius: "8px",
-                  background: "var(--card-bg)",
-                  color: "var(--text-primary)",
-                  fontSize: "0.9rem",
-                  minWidth: "150px",
-                }}
-              />
-              <datalist id="categories">
-                {existingCategories.map((cat) => (
-                  <option key={cat} value={cat} />
-                ))}
-              </datalist>
+              <div className="folder-display">
+                {(() => {
+                  const currentFolderData = getFolderById(selectedFolder);
+                  if (!currentFolderData) return null;
+
+                  const isImage =
+                    currentFolderData.icon &&
+                    currentFolderData.icon.startsWith("data:");
+
+                  return (
+                    <div
+                      className="folder-icon-display"
+                      style={{ backgroundColor: currentFolderData.color }}
+                    >
+                      {isImage ? (
+                        <img
+                          src={currentFolderData.icon}
+                          alt={currentFolderData.name}
+                          className="folder-icon-image"
+                        />
+                      ) : (
+                        <span className="folder-icon-emoji">
+                          {currentFolderData.icon}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })()}
+                <span className="folder-name">
+                  {getFolderById(selectedFolder)?.name}
+                </span>
+              </div>
             </div>
           </div>
+        </div>
+
+        <div className="category-input-section">
+          <label>Category:</label>
+          <input
+            type="text"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            placeholder="Optional category"
+            list="categories"
+            className="category-input"
+          />
+          <datalist id="categories">
+            {existingCategories.map((cat) => (
+              <option key={cat} value={cat} />
+            ))}
+          </datalist>
         </div>
         <p style={{ fontSize: "0.875rem", opacity: 0.7, margin: "0" }}>
           {getFolderById(selectedFolder)?.description}
