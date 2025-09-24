@@ -1,13 +1,5 @@
 import { useState } from "react";
-import {
-  BookOpen,
-  Plus,
-  Settings,
-  Cog,
-  Play,
-  Pause,
-  Square,
-} from "lucide-react";
+import { BookOpen, Plus, Edit3, Cog, Play, Pause, Square } from "lucide-react";
 import type { TabType } from "./types/flashcard";
 import { useFlashcards } from "./hooks/useFlashcards";
 import { usePersistentState } from "./hooks/usePersistentState";
@@ -34,7 +26,7 @@ function App() {
   const tabs = [
     { id: "study" as TabType, label: "Study Mode", icon: BookOpen },
     { id: "add" as TabType, label: "Add Cards", icon: Plus },
-    { id: "manage" as TabType, label: "Manage Cards", icon: Settings },
+    { id: "manage" as TabType, label: "Manage Cards", icon: Edit3 },
     { id: "settings" as TabType, label: "Settings", icon: Cog },
   ];
 

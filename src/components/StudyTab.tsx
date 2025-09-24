@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -28,7 +28,7 @@ interface StudyTabProps {
   folders: StudyFolder[];
   currentFolder: string;
   setCurrentFolder: (folderId: string) => void;
-  getCategories: () => string[];
+  getCategoriesByFolder: (folderId: string) => string[];
   getCardsByCategory: (category: string) => Flashcard[];
   getCardsByFolder: (folderId: string) => Flashcard[];
   shuffleCards: (cards: Flashcard[]) => Flashcard[];
@@ -45,22 +45,23 @@ interface StudyTabProps {
 const StudyTab: React.FC<StudyTabProps> = ({
   flashcards,
   folders,
-  // currentFolder,
-  getCategories,
+  currentFolder,
+  getCategoriesByFolder,
   getCardsByCategory,
   getCardsByFolder,
   shuffleCards,
   markAsReviewed,
   updateFlashcard,
-  // getFolderById,
+  getFolderById,
   persistentState,
 }) => {
   const [currentCards, setCurrentCards] = useState<Flashcard[]>([]);
   const [showEditor, setShowEditor] = useState(false);
   const [isNavigating] = useState(false);
   const [skipFlipAnimation, setSkipFlipAnimation] = useState(false);
+  const isShuffledRef = useRef(false);
 
-  const categories = getCategories();
+  const categories = getCategoriesByFolder(currentFolder);
 
   // Use persistent state
   const currentIndex = persistentState.state.studyCurrentIndex;
@@ -70,6 +71,9 @@ const StudyTab: React.FC<StudyTabProps> = ({
 
   // Initialize cards when component mounts or folder/category changes
   useEffect(() => {
+    // Reset shuffle state when folder/category changes
+    isShuffledRef.current = false;
+
     let cards: Flashcard[];
 
     if (studyFolder === "all") {
@@ -92,7 +96,7 @@ const StudyTab: React.FC<StudyTabProps> = ({
       studyCurrentIndex: 0,
       studyIsFlipped: false,
     });
-  }, [studyFolder, selectedCategory, flashcards]);
+  }, [studyFolder, selectedCategory]);
 
   const currentCard = currentCards[currentIndex];
 
@@ -112,6 +116,7 @@ const StudyTab: React.FC<StudyTabProps> = ({
 
     const shuffled = shuffleCards(cards);
     setCurrentCards(shuffled);
+    isShuffledRef.current = true;
     persistentState.updateState({
       studyCurrentIndex: 0,
       studyIsFlipped: false,
@@ -247,6 +252,77 @@ const StudyTab: React.FC<StudyTabProps> = ({
 
   return (
     <div className="study-tab">
+      {/* Folder Display Section */}
+      <div className="folder-management-section">
+        <div className="folder-selector">
+          <label>Studying:</label>
+          <div className="folder-switcher">
+            <select
+              value={studyFolder}
+              onChange={(e) =>
+                persistentState.updateState({ studyFolder: e.target.value })
+              }
+              className="folder-dropdown"
+            >
+              <option value="all">All Folders</option>
+              {folders.map((folder) => (
+                <option key={folder.id} value={folder.id}>
+                  {folder.name}
+                </option>
+              ))}
+            </select>
+            <div className="folder-display">
+              {(() => {
+                if (studyFolder === "all") {
+                  return (
+                    <>
+                      <div
+                        className="folder-icon-display"
+                        style={{ backgroundColor: "#6b7280" }}
+                      >
+                        <span className="folder-icon-emoji">📚</span>
+                      </div>
+                      <span className="folder-name">All Folders</span>
+                    </>
+                  );
+                }
+
+                const currentFolderData = getFolderById(studyFolder);
+                if (!currentFolderData) return null;
+
+                const isImage =
+                  currentFolderData.icon &&
+                  currentFolderData.icon.startsWith("data:");
+
+                return (
+                  <>
+                    <div
+                      className="folder-icon-display"
+                      style={{ backgroundColor: currentFolderData.color }}
+                    >
+                      {isImage ? (
+                        <img
+                          src={currentFolderData.icon}
+                          alt={currentFolderData.name}
+                          className="folder-icon-image"
+                        />
+                      ) : (
+                        <span className="folder-icon-emoji">
+                          {currentFolderData.icon}
+                        </span>
+                      )}
+                    </div>
+                    <span className="folder-name">
+                      {currentFolderData.name}
+                    </span>
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div
         style={{
           display: "flex",
@@ -259,21 +335,6 @@ const StudyTab: React.FC<StudyTabProps> = ({
           border: "1px solid var(--border-primary)",
         }}
       >
-        <select
-          value={studyFolder}
-          onChange={(e) =>
-            persistentState.updateState({ studyFolder: e.target.value })
-          }
-          className="category-select"
-          style={{ minWidth: "150px" }}
-        >
-          <option value="all">All Folders</option>
-          {folders.map((folder) => (
-            <option key={folder.id} value={folder.id}>
-              {folder.icon} {folder.name}
-            </option>
-          ))}
-        </select>
         <select
           value={selectedCategory}
           onChange={(e) =>

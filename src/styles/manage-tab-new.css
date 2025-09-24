@@ -950,6 +950,19 @@
   color: white;
 }
 
+/* Bulk Category Update Button */
+.header-top .action-btn.edit {
+  background: var(--card-bg);
+  border: 1px solid var(--primary-color);
+  color: var(--primary-color);
+}
+
+.header-top .action-btn.edit:hover {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
 /* Selection Mode Button */
 .header-top .action-btn.selection-mode {
   background: var(--card-bg);
@@ -1038,6 +1051,30 @@
 .selection-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.selection-btn.delete {
+  background: var(--card-bg);
+  border: 1px solid #ef4444;
+  color: #ef4444;
+}
+
+.selection-btn.delete:hover:not(:disabled) {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: white;
+}
+
+.selection-btn.edit {
+  background: var(--card-bg);
+  border: 1px solid var(--primary-color);
+  color: var(--primary-color);
+}
+
+.selection-btn.edit:hover:not(:disabled) {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
 }
 
 .selection-count {

@@ -38,7 +38,7 @@ interface ManageTabProps {
   updateFlashcard: (id: string, updates: Partial<Flashcard>) => void;
   deleteFlashcard: (id: string) => void;
   searchCards: (query: string) => Flashcard[];
-  getCategories: () => string[];
+  getCategoriesByFolder: (folderId: string) => string[];
   getCardsByFolder: (folderId: string) => Flashcard[];
   importFlashcards: (flashcards: Flashcard[]) => void;
   updateFolder: (id: string, updates: Partial<StudyFolder>) => void;
@@ -61,7 +61,7 @@ const ManageTab: React.FC<ManageTabProps> = ({
   updateFlashcard,
   deleteFlashcard,
   searchCards,
-  getCategories,
+  getCategoriesByFolder,
   getCardsByFolder,
   importFlashcards,
   updateFolder,
@@ -103,13 +103,15 @@ const ManageTab: React.FC<ManageTabProps> = ({
   const [createCustomEmoji, setCreateCustomEmoji] = useState("");
   const [iconImage, setIconImage] = useState<string | null>(null);
   const [createIconImage, setCreateIconImage] = useState<string | null>(null);
-
-  const categories = getCategories();
+  const [showBulkCategoryUpdate, setShowBulkCategoryUpdate] = useState(false);
+  const [bulkCategoryValue, setBulkCategoryValue] = useState("");
 
   // Use persistent state
   const searchQuery = persistentState.state.manageSearchQuery;
   const selectedCategory = persistentState.state.manageSelectedCategory;
   const selectedFolder = persistentState.state.manageSelectedFolder;
+
+  const categories = getCategoriesByFolder(selectedFolder);
   const sortField = persistentState.state.manageSortField;
   const sortDirection = persistentState.state.manageSortDirection;
 
@@ -232,15 +234,6 @@ const ManageTab: React.FC<ManageTabProps> = ({
 
     // Always update lastSelectedIndex when a card is clicked
     setLastSelectedIndex(cardIndex);
-  };
-
-  const selectAllCards = () => {
-    const allCardIds = displayCards.map((card) => card.id);
-    setSelectedCards(new Set(allCardIds));
-    // Set lastSelectedIndex to the last card for shift+click functionality
-    if (displayCards.length > 0) {
-      setLastSelectedIndex(displayCards.length - 1);
-    }
   };
 
   const deselectAllCards = () => {
@@ -375,6 +368,33 @@ const ManageTab: React.FC<ManageTabProps> = ({
     persistentState.updateState({ manageSelectedFolder: folderId });
   };
 
+  const handleBulkCategoryUpdate = () => {
+    if (selectedCards.size === 0) return;
+
+    setShowBulkCategoryUpdate(true);
+    setBulkCategoryValue("");
+  };
+
+  const handleBulkCategorySave = () => {
+    if (selectedCards.size === 0) return;
+
+    // Update all selected cards with the new category
+    selectedCards.forEach((cardId) => {
+      updateFlashcard(cardId, { category: bulkCategoryValue.trim() });
+    });
+
+    // Clear selection and close form
+    setSelectedCards(new Set());
+    setSelectionMode(false);
+    setShowBulkCategoryUpdate(false);
+    setBulkCategoryValue("");
+  };
+
+  const handleBulkCategoryCancel = () => {
+    setShowBulkCategoryUpdate(false);
+    setBulkCategoryValue("");
+  };
+
   const handleIconImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -477,18 +497,6 @@ const ManageTab: React.FC<ManageTabProps> = ({
               <Upload size={20} />
               <span>Import</span>
             </button>
-            {selectedCards.size > 0 && (
-              <button
-                onClick={handleBulkDelete}
-                className="action-btn delete"
-                title={`Delete ${selectedCards.size} selected card${
-                  selectedCards.size === 1 ? "" : "s"
-                }`}
-              >
-                <Trash2 size={20} />
-                <span>Delete ({selectedCards.size})</span>
-              </button>
-            )}
             <input
               ref={fileInputRef}
               type="file"
@@ -845,6 +853,49 @@ const ManageTab: React.FC<ManageTabProps> = ({
         </div>
       )}
 
+      {/* Bulk Category Update Form */}
+      {showBulkCategoryUpdate && (
+        <div className="folder-edit-form">
+          <h3>
+            Update Category for {selectedCards.size} Card
+            {selectedCards.size === 1 ? "" : "s"}
+          </h3>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleBulkCategorySave();
+            }}
+          >
+            <div className="form-row">
+              <div className="form-group">
+                <label>New Category</label>
+                <input
+                  type="text"
+                  value={bulkCategoryValue}
+                  onChange={(e) => setBulkCategoryValue(e.target.value)}
+                  placeholder="Enter new category name"
+                  className="category-input"
+                />
+              </div>
+            </div>
+
+            <div className="form-actions">
+              <button type="submit" className="btn btn-primary">
+                Update {selectedCards.size} Card
+                {selectedCards.size === 1 ? "" : "s"}
+              </button>
+              <button
+                type="button"
+                onClick={handleBulkCategoryCancel}
+                className="btn btn-secondary"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
       {/* Controls Section */}
       <div className="controls-section">
         <div className="search-filter-row">
@@ -908,19 +959,36 @@ const ManageTab: React.FC<ManageTabProps> = ({
             {selectionMode && (
               <div className="selection-controls">
                 <button
-                  onClick={selectAllCards}
-                  className="selection-btn"
-                  disabled={displayCards.length === 0}
-                >
-                  Select All
-                </button>
-                <button
                   onClick={deselectAllCards}
                   className="selection-btn"
                   disabled={selectedCards.size === 0}
                 >
                   Deselect All
                 </button>
+                {selectedCards.size > 0 && (
+                  <>
+                    <button
+                      onClick={handleBulkDelete}
+                      className="selection-btn delete"
+                      title={`Delete ${selectedCards.size} selected card${
+                        selectedCards.size === 1 ? "" : "s"
+                      }`}
+                    >
+                      <Trash2 size={16} />
+                      Delete ({selectedCards.size})
+                    </button>
+                    <button
+                      onClick={handleBulkCategoryUpdate}
+                      className="selection-btn edit"
+                      title={`Update category for ${
+                        selectedCards.size
+                      } selected card${selectedCards.size === 1 ? "" : "s"}`}
+                    >
+                      <Edit2 size={16} />
+                      Update Category ({selectedCards.size})
+                    </button>
+                  </>
+                )}
                 {selectedCards.size > 0 && (
                   <span className="selection-count">
                     {selectedCards.size} selected
