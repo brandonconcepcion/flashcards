@@ -4,6 +4,7 @@ export interface PersistentState {
   // Study Tab state
   studyCurrentIndex: number;
   studySelectedCategories: string[];
+  studySelectedDifficulties: string[];
   studyFolder: string;
   studyIsFlipped: boolean;
   
@@ -23,6 +24,7 @@ export interface PersistentState {
 const defaultState: PersistentState = {
   studyCurrentIndex: 0,
   studySelectedCategories: [],
+  studySelectedDifficulties: [],
   studyFolder: 'all',
   studyIsFlipped: false,
   manageSearchQuery: '',

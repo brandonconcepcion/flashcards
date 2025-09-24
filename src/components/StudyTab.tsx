@@ -47,19 +47,25 @@ const StudyTab: React.FC<StudyTabProps> = ({
   const [isNavigating] = useState(false);
   const [skipFlipAnimation, setSkipFlipAnimation] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isDifficultyDropdownOpen, setIsDifficultyDropdownOpen] =
+    useState(false);
   const isShuffledRef = useRef(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const difficultyDropdownRef = useRef<HTMLDivElement>(null);
 
   // Use persistent state
   const currentIndex = persistentState.state.studyCurrentIndex;
   const isFlipped = persistentState.state.studyIsFlipped;
   const selectedCategories = persistentState.state.studySelectedCategories;
+  const selectedDifficulties = persistentState.state.studySelectedDifficulties;
   const studyFolder = persistentState.state.studyFolder;
 
   const categories =
     studyFolder === "all"
       ? getCategories()
       : getCategoriesByFolder(studyFolder);
+
+  const difficultyOptions = ["Easy", "Medium", "Hard"];
 
   // Clear selected categories if they don't exist in current folder
   useEffect(() => {
@@ -81,7 +87,7 @@ const StudyTab: React.FC<StudyTabProps> = ({
     }
   }, [categories, selectedCategories, persistentState]);
 
-  // Handle click outside to close dropdown
+  // Handle click outside to close dropdowns
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -90,16 +96,22 @@ const StudyTab: React.FC<StudyTabProps> = ({
       ) {
         setIsDropdownOpen(false);
       }
+      if (
+        difficultyDropdownRef.current &&
+        !difficultyDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDifficultyDropdownOpen(false);
+      }
     };
 
-    if (isDropdownOpen) {
+    if (isDropdownOpen || isDifficultyDropdownOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isDropdownOpen]);
+  }, [isDropdownOpen, isDifficultyDropdownOpen]);
 
   // Initialize cards when component mounts or folder/category changes
   useEffect(() => {
@@ -118,12 +130,21 @@ const StudyTab: React.FC<StudyTabProps> = ({
 
     if (studyFolder === "all") {
       // Show all cards across all folders
-      cards =
-        selectedCategories.length > 0
-          ? flashcards.filter((card) =>
-              selectedCategories.includes(card.category)
-            )
-          : flashcards;
+      cards = flashcards;
+
+      // Filter by categories
+      if (selectedCategories.length > 0) {
+        cards = cards.filter((card) =>
+          selectedCategories.includes(card.category)
+        );
+      }
+
+      // Filter by difficulties
+      if (selectedDifficulties.length > 0) {
+        cards = cards.filter((card) =>
+          selectedDifficulties.includes(card.difficulty)
+        );
+      }
     } else {
       // Show cards from specific folder
       const folderCards = flashcards.filter(
@@ -132,14 +153,27 @@ const StudyTab: React.FC<StudyTabProps> = ({
       console.log(
         "Folder cards:",
         folderCards.length,
-        folderCards.map((c) => ({ category: c.category, folder: c.folder }))
+        folderCards.map((c) => ({
+          category: c.category,
+          folder: c.folder,
+          difficulty: c.difficulty,
+        }))
       );
-      cards =
-        selectedCategories.length > 0
-          ? folderCards.filter((card) =>
-              selectedCategories.includes(card.category)
-            )
-          : folderCards;
+      cards = folderCards;
+
+      // Filter by categories
+      if (selectedCategories.length > 0) {
+        cards = cards.filter((card) =>
+          selectedCategories.includes(card.category)
+        );
+      }
+
+      // Filter by difficulties
+      if (selectedDifficulties.length > 0) {
+        cards = cards.filter((card) =>
+          selectedDifficulties.includes(card.difficulty)
+        );
+      }
     }
 
     console.log("Filtered cards:", cards.length, cards);
@@ -148,7 +182,7 @@ const StudyTab: React.FC<StudyTabProps> = ({
       studyCurrentIndex: 0,
       studyIsFlipped: false,
     });
-  }, [studyFolder, selectedCategories, flashcards]);
+  }, [studyFolder, selectedCategories, selectedDifficulties, flashcards]);
 
   const currentCard = currentCards[currentIndex];
 
@@ -156,20 +190,38 @@ const StudyTab: React.FC<StudyTabProps> = ({
     let cards: Flashcard[];
 
     if (studyFolder === "all") {
-      cards =
-        selectedCategories.length > 0
-          ? flashcards.filter((card) =>
-              selectedCategories.includes(card.category)
-            )
-          : flashcards;
+      cards = flashcards;
+
+      // Filter by categories
+      if (selectedCategories.length > 0) {
+        cards = cards.filter((card) =>
+          selectedCategories.includes(card.category)
+        );
+      }
+
+      // Filter by difficulties
+      if (selectedDifficulties.length > 0) {
+        cards = cards.filter((card) =>
+          selectedDifficulties.includes(card.difficulty)
+        );
+      }
     } else {
       const folderCards = getCardsByFolder(studyFolder);
-      cards =
-        selectedCategories.length > 0
-          ? folderCards.filter((card) =>
-              selectedCategories.includes(card.category)
-            )
-          : folderCards;
+      cards = folderCards;
+
+      // Filter by categories
+      if (selectedCategories.length > 0) {
+        cards = cards.filter((card) =>
+          selectedCategories.includes(card.category)
+        );
+      }
+
+      // Filter by difficulties
+      if (selectedDifficulties.length > 0) {
+        cards = cards.filter((card) =>
+          selectedDifficulties.includes(card.difficulty)
+        );
+      }
     }
 
     const shuffled = shuffleCards(cards);
@@ -193,6 +245,20 @@ const StudyTab: React.FC<StudyTabProps> = ({
 
   const handleDropdownToggle = () => {
     setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const handleDifficultyToggle = (difficulty: string) => {
+    const newDifficulties = selectedDifficulties.includes(difficulty)
+      ? selectedDifficulties.filter((diff) => diff !== difficulty)
+      : [...selectedDifficulties, difficulty];
+
+    persistentState.updateState({
+      studySelectedDifficulties: newDifficulties,
+    });
+  };
+
+  const handleDifficultyDropdownToggle = () => {
+    setIsDifficultyDropdownOpen(!isDifficultyDropdownOpen);
   };
 
   const handleNext = () => {
@@ -418,124 +484,236 @@ const StudyTab: React.FC<StudyTabProps> = ({
             justifyContent: "space-between",
           }}
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-            <label style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
-              Filter by Topic:
-            </label>
-            <div style={{ position: "relative" }} ref={dropdownRef}>
-              <button
-                type="button"
-                onClick={handleDropdownToggle}
-                style={{
-                  minWidth: "200px",
-                  padding: "8px 12px",
-                  background: "var(--input-bg)",
-                  border: "1px solid var(--input-border)",
-                  borderRadius: "6px",
-                  color: "var(--text-primary)",
-                  fontSize: "0.9rem",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  textAlign: "left",
-                }}
-              >
-                <span>
-                  {selectedCategories.length === 0
-                    ? "All Topics"
-                    : selectedCategories.length === 1
-                    ? selectedCategories[0]
-                    : `${selectedCategories.length} topics selected`}
-                </span>
-                <ChevronDown
-                  size={16}
+          <div style={{ display: "flex", gap: "12px", alignItems: "flex-end" }}>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "4px" }}
+            >
+              <label style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
+                Filter by Topic:
+              </label>
+              <div style={{ position: "relative" }} ref={dropdownRef}>
+                <button
+                  type="button"
+                  onClick={handleDropdownToggle}
                   style={{
-                    transform: isDropdownOpen
-                      ? "rotate(180deg)"
-                      : "rotate(0deg)",
-                    transition: "transform 0.2s ease",
-                  }}
-                />
-              </button>
-
-              {isDropdownOpen && (
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "100%",
-                    left: 0,
-                    right: 0,
-                    marginTop: "4px",
-                    background: "var(--card-bg)",
-                    border: "1px solid var(--border-primary)",
+                    minWidth: "200px",
+                    padding: "8px 12px",
+                    background: "var(--input-bg)",
+                    border: "1px solid var(--input-border)",
                     borderRadius: "6px",
-                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-                    zIndex: 1000,
-                    maxHeight: "200px",
-                    overflowY: "auto",
+                    color: "var(--text-primary)",
+                    fontSize: "0.9rem",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    textAlign: "left",
                   }}
                 >
-                  {categories.length === 0 ? (
-                    <div
-                      style={{
-                        padding: "12px",
-                        color: "var(--text-muted)",
-                        fontSize: "0.9rem",
-                        textAlign: "center",
-                      }}
-                    >
-                      No topics available
-                    </div>
-                  ) : (
-                    <>
+                  <span>
+                    {selectedCategories.length === 0
+                      ? "All Topics"
+                      : selectedCategories.length === 1
+                      ? selectedCategories[0]
+                      : `${selectedCategories.length} topics selected`}
+                  </span>
+                  <ChevronDown
+                    size={16}
+                    style={{
+                      transform: isDropdownOpen
+                        ? "rotate(180deg)"
+                        : "rotate(0deg)",
+                      transition: "transform 0.2s ease",
+                    }}
+                  />
+                </button>
+
+                {isDropdownOpen && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "100%",
+                      left: 0,
+                      right: 0,
+                      marginTop: "4px",
+                      background: "var(--card-bg)",
+                      border: "1px solid var(--border-primary)",
+                      borderRadius: "6px",
+                      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                      zIndex: 1000,
+                      maxHeight: "200px",
+                      overflowY: "auto",
+                    }}
+                  >
+                    {categories.length === 0 ? (
                       <div
                         style={{
-                          padding: "8px 12px",
-                          borderBottom: "1px solid var(--border-primary)",
-                          fontSize: "0.8rem",
+                          padding: "12px",
                           color: "var(--text-muted)",
-                          background: "var(--bg-secondary)",
+                          fontSize: "0.9rem",
+                          textAlign: "center",
                         }}
                       >
-                        Select topics to study:
+                        No topics available
                       </div>
-                      {categories.map((category) => (
-                        <label
-                          key={category}
+                    ) : (
+                      <>
+                        <div
                           style={{
-                            display: "flex",
-                            alignItems: "center",
                             padding: "8px 12px",
-                            cursor: "pointer",
-                            fontSize: "0.9rem",
-                            color: "var(--text-primary)",
-                            transition: "background-color 0.2s ease",
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background =
-                              "var(--bg-secondary)";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = "transparent";
+                            borderBottom: "1px solid var(--border-primary)",
+                            fontSize: "0.8rem",
+                            color: "var(--text-muted)",
+                            background: "var(--bg-secondary)",
                           }}
                         >
-                          <input
-                            type="checkbox"
-                            checked={selectedCategories.includes(category)}
-                            onChange={() => handleCategoryToggle(category)}
+                          Select topics to study:
+                        </div>
+                        {categories.map((category) => (
+                          <label
+                            key={category}
                             style={{
-                              marginRight: "8px",
-                              accentColor: "var(--primary-color)",
+                              display: "flex",
+                              alignItems: "center",
+                              padding: "8px 12px",
+                              cursor: "pointer",
+                              fontSize: "0.9rem",
+                              color: "var(--text-primary)",
+                              transition: "background-color 0.2s ease",
                             }}
-                          />
-                          {category}
-                        </label>
-                      ))}
-                    </>
-                  )}
-                </div>
-              )}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background =
+                                "var(--bg-secondary)";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = "transparent";
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedCategories.includes(category)}
+                              onChange={() => handleCategoryToggle(category)}
+                              style={{
+                                marginRight: "8px",
+                                accentColor: "var(--primary-color)",
+                              }}
+                            />
+                            {category}
+                          </label>
+                        ))}
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "4px" }}
+            >
+              <label style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
+                Filter by Difficulty:
+              </label>
+              <div style={{ position: "relative" }} ref={difficultyDropdownRef}>
+                <button
+                  type="button"
+                  onClick={handleDifficultyDropdownToggle}
+                  style={{
+                    minWidth: "160px",
+                    padding: "8px 12px",
+                    background: "var(--input-bg)",
+                    border: "1px solid var(--input-border)",
+                    borderRadius: "6px",
+                    color: "var(--text-primary)",
+                    fontSize: "0.9rem",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    textAlign: "left",
+                  }}
+                >
+                  <span>
+                    {selectedDifficulties.length === 0
+                      ? "All Difficulties"
+                      : selectedDifficulties.length === 1
+                      ? selectedDifficulties[0]
+                      : `${selectedDifficulties.length} difficulties selected`}
+                  </span>
+                  <ChevronDown
+                    size={16}
+                    style={{
+                      transform: isDifficultyDropdownOpen
+                        ? "rotate(180deg)"
+                        : "rotate(0deg)",
+                      transition: "transform 0.2s ease",
+                    }}
+                  />
+                </button>
+
+                {isDifficultyDropdownOpen && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "100%",
+                      left: 0,
+                      right: 0,
+                      marginTop: "4px",
+                      background: "var(--card-bg)",
+                      border: "1px solid var(--border-primary)",
+                      borderRadius: "6px",
+                      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                      zIndex: 1000,
+                      maxHeight: "200px",
+                      overflowY: "auto",
+                    }}
+                  >
+                    <div
+                      style={{
+                        padding: "8px 12px",
+                        borderBottom: "1px solid var(--border-primary)",
+                        fontSize: "0.8rem",
+                        color: "var(--text-muted)",
+                        background: "var(--bg-secondary)",
+                      }}
+                    >
+                      Select difficulties to study:
+                    </div>
+                    {difficultyOptions.map((difficulty) => (
+                      <label
+                        key={difficulty}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          padding: "8px 12px",
+                          cursor: "pointer",
+                          fontSize: "0.9rem",
+                          color: "var(--text-primary)",
+                          transition: "background-color 0.2s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background =
+                            "var(--bg-secondary)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "transparent";
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedDifficulties.includes(difficulty)}
+                          onChange={() => handleDifficultyToggle(difficulty)}
+                          style={{
+                            marginRight: "8px",
+                            accentColor: "var(--primary-color)",
+                          }}
+                        />
+                        {difficulty}
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
