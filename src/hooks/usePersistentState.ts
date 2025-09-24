@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 
-interface PersistentState {
+export interface PersistentState {
   // Study Tab state
   studyCurrentIndex: number;
-  studySelectedCategory: string;
+  studySelectedCategories: string[];
   studyFolder: string;
   studyIsFlipped: boolean;
   
@@ -22,7 +22,7 @@ interface PersistentState {
 
 const defaultState: PersistentState = {
   studyCurrentIndex: 0,
-  studySelectedCategory: '',
+  studySelectedCategories: [],
   studyFolder: 'all',
   studyIsFlipped: false,
   manageSearchQuery: '',
@@ -41,7 +41,18 @@ export const usePersistentState = () => {
   const [state, setState] = useState<PersistentState>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      return saved ? { ...defaultState, ...JSON.parse(saved) } : defaultState;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        
+        // Migration: Convert old studySelectedCategory to studySelectedCategories
+        if (parsed.studySelectedCategory && !parsed.studySelectedCategories) {
+          parsed.studySelectedCategories = parsed.studySelectedCategory ? [parsed.studySelectedCategory] : [];
+          delete parsed.studySelectedCategory;
+        }
+        
+        return { ...defaultState, ...parsed };
+      }
+      return defaultState;
     } catch {
       return defaultState;
     }

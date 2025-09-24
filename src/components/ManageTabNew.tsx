@@ -16,19 +16,7 @@ import {
 import type { Flashcard, StudyFolder } from "../types/flashcard";
 import MarkdownText from "./MarkdownText";
 import GoogleDocsExportModal from "./GoogleDocsExportModal";
-
-interface PersistentState {
-  studyCurrentIndex: number;
-  studySelectedCategory: string;
-  studyFolder: string;
-  studyIsFlipped: boolean;
-  manageSearchQuery: string;
-  manageSelectedCategory: string;
-  manageSelectedFolder: string;
-  manageSortField: "question" | "category" | "difficulty" | "createdAt";
-  manageSortDirection: "asc" | "desc";
-  manageExpandedCard: string | null;
-}
+import type { PersistentState } from "../hooks/usePersistentState";
 
 interface ManageTabProps {
   flashcards: Flashcard[];
@@ -42,6 +30,7 @@ interface ManageTabProps {
   getCardsByFolder: (folderId: string) => Flashcard[];
   importFlashcards: (flashcards: Flashcard[]) => void;
   updateFolder: (id: string, updates: Partial<StudyFolder>) => void;
+  deleteFolder: (id: string) => void;
   addFolder: (
     name: string,
     description: string,
@@ -65,6 +54,7 @@ const ManageTab: React.FC<ManageTabProps> = ({
   getCardsByFolder,
   importFlashcards,
   updateFolder,
+  deleteFolder,
   addFolder,
   persistentState,
 }) => {
@@ -314,6 +304,21 @@ const ManageTab: React.FC<ManageTabProps> = ({
     });
     setCustomEmoji("");
     setIconImage(null);
+  };
+
+  const handleFolderDelete = () => {
+    if (
+      window.confirm(
+        `Are you sure you want to delete the folder "${folderEditForm.name}"? All cards in this folder will be moved to the "General Review" folder.`
+      )
+    ) {
+      deleteFolder(selectedFolder);
+      setShowFolderEdit(false);
+      setCustomEmoji("");
+      setIconImage(null);
+      // Switch to general folder after deletion
+      persistentState.updateState({ manageSelectedFolder: "general" });
+    }
   };
 
   const handleCreateFolder = () => {
@@ -722,6 +727,19 @@ const ManageTab: React.FC<ManageTabProps> = ({
                 className="btn btn-secondary"
               >
                 Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleFolderDelete}
+                className="btn btn-danger"
+                style={{
+                  background: "var(--error-color)",
+                  color: "white",
+                  border: "1px solid var(--error-color)",
+                }}
+              >
+                <Trash2 size={16} />
+                Delete Folder
               </button>
             </div>
           </form>

@@ -315,7 +315,7 @@ const GoogleDocsExportModal: React.FC<GoogleDocsExportModalProps> = ({
                             checked={includeFolder}
                             onChange={(e) => setIncludeFolder(e.target.checked)}
                           />
-                          Folder information
+                          📁 Folder information (recommended)
                         </label>
                         <label className="checkbox-label">
                           <input

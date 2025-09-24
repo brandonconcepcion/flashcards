@@ -6,28 +6,16 @@ import {
   AlertCircle,
   Shuffle,
   CheckCircle,
+  ChevronDown,
 } from "lucide-react";
 import type { Flashcard, StudyFolder } from "../types/flashcard";
 import MarkdownText from "./MarkdownText";
-
-interface PersistentState {
-  studyCurrentIndex: number;
-  studySelectedCategory: string;
-  studyFolder: string;
-  studyIsFlipped: boolean;
-  manageSearchQuery: string;
-  manageSelectedCategory: string;
-  manageSelectedFolder: string;
-  manageSortField: "question" | "category" | "difficulty" | "createdAt";
-  manageSortDirection: "asc" | "desc";
-  manageExpandedCard: string | null;
-}
+import type { PersistentState } from "../hooks/usePersistentState";
 
 interface StudyTabProps {
   flashcards: Flashcard[];
   folders: StudyFolder[];
-  currentFolder: string;
-  setCurrentFolder: (folderId: string) => void;
+  getCategories: () => string[];
   getCategoriesByFolder: (folderId: string) => string[];
   getCardsByCategory: (category: string) => Flashcard[];
   getCardsByFolder: (folderId: string) => Flashcard[];
@@ -45,9 +33,8 @@ interface StudyTabProps {
 const StudyTab: React.FC<StudyTabProps> = ({
   flashcards,
   folders,
-  currentFolder,
+  getCategories,
   getCategoriesByFolder,
-  getCardsByCategory,
   getCardsByFolder,
   shuffleCards,
   markAsReviewed,
@@ -59,44 +46,109 @@ const StudyTab: React.FC<StudyTabProps> = ({
   const [showEditor, setShowEditor] = useState(false);
   const [isNavigating] = useState(false);
   const [skipFlipAnimation, setSkipFlipAnimation] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const isShuffledRef = useRef(false);
-
-  const categories = getCategoriesByFolder(currentFolder);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Use persistent state
   const currentIndex = persistentState.state.studyCurrentIndex;
   const isFlipped = persistentState.state.studyIsFlipped;
-  const selectedCategory = persistentState.state.studySelectedCategory;
+  const selectedCategories = persistentState.state.studySelectedCategories;
   const studyFolder = persistentState.state.studyFolder;
+
+  const categories =
+    studyFolder === "all"
+      ? getCategories()
+      : getCategoriesByFolder(studyFolder);
+
+  // Clear selected categories if they don't exist in current folder
+  useEffect(() => {
+    if (selectedCategories.length > 0) {
+      const validCategories = selectedCategories.filter((cat) =>
+        categories.includes(cat)
+      );
+      if (validCategories.length !== selectedCategories.length) {
+        console.log(
+          "Clearing invalid categories:",
+          selectedCategories,
+          "Valid:",
+          validCategories
+        );
+        persistentState.updateState({
+          studySelectedCategories: validCategories,
+        });
+      }
+    }
+  }, [categories, selectedCategories, persistentState]);
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isDropdownOpen]);
 
   // Initialize cards when component mounts or folder/category changes
   useEffect(() => {
     // Reset shuffle state when folder/category changes
     isShuffledRef.current = false;
 
+    console.log("StudyTab useEffect:", {
+      studyFolder,
+      selectedCategories,
+      selectedCategoriesValue: selectedCategories[0],
+      flashcardsCount: flashcards.length,
+      categories,
+    });
+
     let cards: Flashcard[];
 
     if (studyFolder === "all") {
       // Show all cards across all folders
-      cards = selectedCategory
-        ? flashcards.filter((card) => card.category === selectedCategory)
-        : flashcards;
+      cards =
+        selectedCategories.length > 0
+          ? flashcards.filter((card) =>
+              selectedCategories.includes(card.category)
+            )
+          : flashcards;
     } else {
       // Show cards from specific folder
       const folderCards = flashcards.filter(
         (card) => card.folder === studyFolder
       );
-      cards = selectedCategory
-        ? folderCards.filter((card) => card.category === selectedCategory)
-        : folderCards;
+      console.log(
+        "Folder cards:",
+        folderCards.length,
+        folderCards.map((c) => ({ category: c.category, folder: c.folder }))
+      );
+      cards =
+        selectedCategories.length > 0
+          ? folderCards.filter((card) =>
+              selectedCategories.includes(card.category)
+            )
+          : folderCards;
     }
 
+    console.log("Filtered cards:", cards.length, cards);
     setCurrentCards(cards);
     persistentState.updateState({
       studyCurrentIndex: 0,
       studyIsFlipped: false,
     });
-  }, [studyFolder, selectedCategory]);
+  }, [studyFolder, selectedCategories, flashcards]);
 
   const currentCard = currentCards[currentIndex];
 
@@ -104,14 +156,20 @@ const StudyTab: React.FC<StudyTabProps> = ({
     let cards: Flashcard[];
 
     if (studyFolder === "all") {
-      cards = selectedCategory
-        ? getCardsByCategory(selectedCategory)
-        : flashcards;
+      cards =
+        selectedCategories.length > 0
+          ? flashcards.filter((card) =>
+              selectedCategories.includes(card.category)
+            )
+          : flashcards;
     } else {
       const folderCards = getCardsByFolder(studyFolder);
-      cards = selectedCategory
-        ? folderCards.filter((card) => card.category === selectedCategory)
-        : folderCards;
+      cards =
+        selectedCategories.length > 0
+          ? folderCards.filter((card) =>
+              selectedCategories.includes(card.category)
+            )
+          : folderCards;
     }
 
     const shuffled = shuffleCards(cards);
@@ -121,6 +179,20 @@ const StudyTab: React.FC<StudyTabProps> = ({
       studyCurrentIndex: 0,
       studyIsFlipped: false,
     });
+  };
+
+  const handleCategoryToggle = (category: string) => {
+    const newCategories = selectedCategories.includes(category)
+      ? selectedCategories.filter((cat) => cat !== category)
+      : [...selectedCategories, category];
+
+    persistentState.updateState({
+      studySelectedCategories: newCategories,
+    });
+  };
+
+  const handleDropdownToggle = () => {
+    setIsDropdownOpen(!isDropdownOpen);
   };
 
   const handleNext = () => {
@@ -193,6 +265,13 @@ const StudyTab: React.FC<StudyTabProps> = ({
     );
   }
 
+  console.log("StudyTab render:", {
+    currentCardsLength: currentCards.length,
+    currentCards,
+    studyFolder,
+    selectedCategories,
+  });
+
   if (currentCards.length === 0) {
     return (
       <div className="study-tab">
@@ -220,23 +299,6 @@ const StudyTab: React.FC<StudyTabProps> = ({
             {folders.map((folder) => (
               <option key={folder.id} value={folder.id}>
                 {folder.icon} {folder.name}
-              </option>
-            ))}
-          </select>
-          <select
-            value={selectedCategory}
-            onChange={(e) =>
-              persistentState.updateState({
-                studySelectedCategory: e.target.value,
-              })
-            }
-            className="category-select"
-            style={{ minWidth: "120px" }}
-          >
-            <option value="">All Categories</option>
-            {categories.map((category) => (
-              <option key={category} value={category}>
-                {category}
               </option>
             ))}
           </select>
@@ -323,49 +385,190 @@ const StudyTab: React.FC<StudyTabProps> = ({
         </div>
       </div>
 
+      {/* Study Controls Section */}
       <div
         style={{
           display: "flex",
-          gap: "12px",
-          alignItems: "center",
-          marginBottom: "16px",
-          padding: "12px",
+          flexDirection: "column",
+          gap: "16px",
+          marginBottom: "20px",
+          padding: "16px",
           background: "var(--bg-secondary)",
-          borderRadius: "8px",
+          borderRadius: "12px",
           border: "1px solid var(--border-primary)",
         }}
       >
-        <select
-          value={selectedCategory}
-          onChange={(e) =>
-            persistentState.updateState({
-              studySelectedCategory: e.target.value,
-            })
-          }
-          className="category-select"
-          style={{ minWidth: "120px" }}
-        >
-          <option value="">All Categories</option>
-          {categories.map((category) => (
-            <option key={category} value={category}>
-              {category}
-            </option>
-          ))}
-        </select>
-        <button
-          onClick={handleShuffle}
-          className="btn btn-secondary"
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <span
+            style={{
+              fontSize: "0.9rem",
+              fontWeight: "500",
+              color: "var(--text-secondary)",
+            }}
+          >
+            Study Controls:
+          </span>
+        </div>
+
+        <div
           style={{
-            padding: "6px 12px",
-            fontSize: "0.9rem",
-            background: "var(--card-bg)",
-            border: "1px solid var(--border-primary)",
-            color: "var(--text-primary)",
+            display: "flex",
+            gap: "12px",
+            alignItems: "flex-end",
+            justifyContent: "space-between",
           }}
         >
-          <Shuffle size={16} />
-          Shuffle
-        </button>
+          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+            <label style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
+              Filter by Topic:
+            </label>
+            <div style={{ position: "relative" }} ref={dropdownRef}>
+              <button
+                type="button"
+                onClick={handleDropdownToggle}
+                style={{
+                  minWidth: "200px",
+                  padding: "8px 12px",
+                  background: "var(--input-bg)",
+                  border: "1px solid var(--input-border)",
+                  borderRadius: "6px",
+                  color: "var(--text-primary)",
+                  fontSize: "0.9rem",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  textAlign: "left",
+                }}
+              >
+                <span>
+                  {selectedCategories.length === 0
+                    ? "All Topics"
+                    : selectedCategories.length === 1
+                    ? selectedCategories[0]
+                    : `${selectedCategories.length} topics selected`}
+                </span>
+                <ChevronDown
+                  size={16}
+                  style={{
+                    transform: isDropdownOpen
+                      ? "rotate(180deg)"
+                      : "rotate(0deg)",
+                    transition: "transform 0.2s ease",
+                  }}
+                />
+              </button>
+
+              {isDropdownOpen && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "100%",
+                    left: 0,
+                    right: 0,
+                    marginTop: "4px",
+                    background: "var(--card-bg)",
+                    border: "1px solid var(--border-primary)",
+                    borderRadius: "6px",
+                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                    zIndex: 1000,
+                    maxHeight: "200px",
+                    overflowY: "auto",
+                  }}
+                >
+                  {categories.length === 0 ? (
+                    <div
+                      style={{
+                        padding: "12px",
+                        color: "var(--text-muted)",
+                        fontSize: "0.9rem",
+                        textAlign: "center",
+                      }}
+                    >
+                      No topics available
+                    </div>
+                  ) : (
+                    <>
+                      <div
+                        style={{
+                          padding: "8px 12px",
+                          borderBottom: "1px solid var(--border-primary)",
+                          fontSize: "0.8rem",
+                          color: "var(--text-muted)",
+                          background: "var(--bg-secondary)",
+                        }}
+                      >
+                        Select topics to study:
+                      </div>
+                      {categories.map((category) => (
+                        <label
+                          key={category}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            padding: "8px 12px",
+                            cursor: "pointer",
+                            fontSize: "0.9rem",
+                            color: "var(--text-primary)",
+                            transition: "background-color 0.2s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background =
+                              "var(--bg-secondary)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = "transparent";
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedCategories.includes(category)}
+                            onChange={() => handleCategoryToggle(category)}
+                            style={{
+                              marginRight: "8px",
+                              accentColor: "var(--primary-color)",
+                            }}
+                          />
+                          {category}
+                        </label>
+                      ))}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <button
+            onClick={handleShuffle}
+            className="btn btn-secondary"
+            style={{
+              padding: "8px 16px",
+              fontSize: "0.9rem",
+              background: "var(--card-bg)",
+              border: "1px solid var(--border-primary)",
+              color: "var(--text-primary)",
+              borderRadius: "6px",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              alignSelf: "flex-end",
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = "var(--primary-color)";
+              e.currentTarget.style.color = "white";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = "var(--card-bg)";
+              e.currentTarget.style.color = "var(--text-primary)";
+            }}
+          >
+            <Shuffle size={16} />
+            Shuffle Cards
+          </button>
+        </div>
       </div>
 
       <div
